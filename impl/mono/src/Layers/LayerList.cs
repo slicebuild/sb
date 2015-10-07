@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using cb.Slices;
+using sb.Slices;
 
-namespace cb.Layers
+namespace sb.Layers
 {
     public class LayerList : List<Layer>
     {

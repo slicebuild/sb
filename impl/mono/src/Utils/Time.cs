@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace cb.Utils
+namespace sb.Utils
 {
     public static class Time
     {

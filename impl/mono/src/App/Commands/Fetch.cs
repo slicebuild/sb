@@ -4,9 +4,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using cb.Utils;
+using sb.Utils;
 
-namespace cb.App.Commands
+namespace sb.App.Commands
 {
     public class Fetch : ICommand
     {
@@ -71,7 +71,7 @@ namespace cb.App.Commands
             {
                 wc.Headers.Add("user-agent", "Mozilla/4.0 (compatible)");
                 wc.Headers.Add("keep-alive", "false");
-                json = wc.DownloadString("https://api.github.com/repos/curabuild/slices/branches");
+                json = wc.DownloadString("https://api.github.com/repos/slicebuild/slices/branches");
             }
 
             var items = json.Replace("\"", "").Split(new[] {'{', '}', ',', '[', ']'}, StringSplitOptions.RemoveEmptyEntries).ToList();

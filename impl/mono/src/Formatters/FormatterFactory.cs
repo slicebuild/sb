@@ -1,8 +1,8 @@
-﻿using cb.App;
-using cb.Formatters.Docker;
-using cb.Formatters.Shell;
+﻿using sb.App;
+using sb.Formatters.Docker;
+using sb.Formatters.Shell;
 
-namespace cb.Formatters
+namespace sb.Formatters
 {
     public class FormatterFactory
     {

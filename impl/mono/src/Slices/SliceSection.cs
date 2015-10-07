@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace cb.Slices
+namespace sb.Slices
 {
     public class SliceSection
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
-using cb.Slices;
+using sb.Slices;
 
-namespace cb.Formatters.Docker
+namespace sb.Formatters.Docker
 {
     public class FormatterDocker : IFormatter
     {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using cb.Utils;
+using sb.Utils;
 
-namespace cb.App.Commands
+namespace sb.App.Commands
 {
     public class Test : Make, ICommand
     {

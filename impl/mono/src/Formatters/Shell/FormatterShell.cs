@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using cb.Slices;
+using sb.Slices;
 
-namespace cb.Formatters.Shell
+namespace sb.Formatters.Shell
 {
     public class FormatterShell : IFormatter
     {
