@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace cb.Utils
+namespace sb.Utils
 {
     public static class Fs
     {

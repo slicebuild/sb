@@ -7,8 +7,8 @@
     <ProjectGuid>{8C47B261-9312-4D00-93FA-627278B36C09}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>cb</RootNamespace>
-    <AssemblyName>cb</AssemblyName>
+    <RootNamespace>sb</RootNamespace>
+    <AssemblyName>sb</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

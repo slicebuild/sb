@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using cb.Formatters;
-using cb.Formatters.Docker;
-using cb.Layers;
-using cb.Slices;
+using sb.Formatters;
+using sb.Formatters.Docker;
+using sb.Layers;
+using sb.Slices;
 
-namespace cb.App.Commands
+namespace sb.App.Commands
 {
     public class Make : ICommand
     {

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace cb.Utils
+namespace sb.Utils
 {
     public class SemName
     {

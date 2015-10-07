@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using cb.App.Commands;
-using cb.Utils;
+using sb.Utils;
+using sb.App.Commands;
 
-namespace cb.App
+namespace sb.App
 {
     public sealed class Args
     {

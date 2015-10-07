@@ -1,7 +1,7 @@
 ﻿using System;
-using cb.App.Messages;
+using sb.App.Messages;
 
-namespace cb.App.Commands
+namespace sb.App.Commands
 {
     public class Help : ICommand
     {
