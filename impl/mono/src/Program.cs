@@ -11,6 +11,8 @@ namespace sb
             try
             {
                 new Args(args).Command.Run();
+                Console.WriteLine("Done");
+                Console.ReadLine();
             }
             catch (Exception ex)
             {

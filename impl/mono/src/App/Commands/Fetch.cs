@@ -53,14 +53,14 @@ namespace sb.App.Commands
 
         private string FetchLatestBranchName()
         {
-            var list = new List<SemVersion>();
+            var list = new List<SemVerName>();
             var branches = FetchBranches();
             foreach (var branch in branches.Where(b => b != "master"))
             {
-                var semName = new SemName(branch);
-                list.Add(new SemVersion(semName.VersionPart, semName.PreReleasePart));
+                var svn = SemVerNameParser.Parse(branch);
+                list.Add(svn);
             }
-            list.Sort((x, y) => y.CompareTo(x));
+            list.Sort((x, y) => (y.NameVersion as IComparable).CompareTo(x.NameVersion));
             return list[0].ToString();
         }
 

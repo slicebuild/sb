@@ -6,43 +6,41 @@ namespace sb.Slices
 {
     public class SliceDirectory
     {
-        private readonly string _root;
-
-        public SliceDirectory(string root)
+        public SliceDirectory(string root, SemVerName semVerName)
         {
-            _root = root;
+            Root = root;
+            SemVerName = semVerName;
         }
+
+        public string Root { get; }
+        public SemVerName SemVerName { get; }
 
         public IList<Slice> FindByOs(string osName)
         {
             var list = new List<Slice>();
-            ScanFiles(_root, list, osName);
-            foreach (var dir in Directory.EnumerateDirectories(_root, "*.*", SearchOption.AllDirectories))
+            ScanFiles(Root, list, osName);
+            foreach (var dir in Directory.EnumerateDirectories(Root, "*.*", SearchOption.AllDirectories))
             {
                 ScanFiles(dir, list, osName);
             }            
             return list;
         }
 
-        private static void ScanFiles(string dir, IList<Slice> list, string osName)
+        private void ScanFiles(string dir, IList<Slice> list, string osName)
         {
             foreach (var path in Directory.EnumerateFiles(dir))
             {
-                var fileName = Path.GetFileName(path);
-                if (fileName == null || fileName.StartsWith("."))
+                var fileName = new FileInfo(path).Name;
+                if (fileName.StartsWith("."))
                     continue;
 
-                var ext = Path.GetExtension(path);
+                var ext = Path.GetExtension(fileName);
                 if (ext == ".md" || ext == ".txt")
                     continue;
 
-                var fi = new FileInfo(path);
-                var nameParts = fi.Name.Split("_"); // handles names like debian-8.2_jekyll-3.0 and possibly with more underscores
-                fileName = nameParts.Length == 1 ? nameParts[0] : nameParts[nameParts.Length - 1]; 
-                var semName = new SemName(fileName);
-
+                var svn = SemVerNameParser.Parse(fileName, SemVerName);
                 var lines = File.ReadAllLines(path);
-                var slice = new Slice(semName, lines);
+                var slice = new Slice(svn, lines);
 
                 if (slice.OsList.Contains(osName))
                     list.Add(slice);

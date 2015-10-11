@@ -41,7 +41,7 @@ namespace sb.App.Commands
 
         public virtual string MakePath(Layer layer)
         {
-            var path = Path.Combine(Args.EnvDir, layer.SemName.ToString()); //todo:include slices semver
+            var path = Path.Combine(Args.EnvDir, layer.SemVerName.ToString()); //todo:include slices semver
             Directory.CreateDirectory(path);
 
             var f = new FormatterFactory().GetFormatter(Args);
@@ -50,7 +50,7 @@ namespace sb.App.Commands
                 return Path.Combine(path, "Dockerfile");
             }
 
-            return Path.Combine(path, layer.SemName.ToString());
+            return Path.Combine(path, layer.SemVerName.ToString());
         }
 
         public virtual void Write(Layer layer, string path)
@@ -64,7 +64,7 @@ namespace sb.App.Commands
             var lines = new List<string>();
             Write(layer, lines);
 
-            var slice = new Slice(layer.SemName, lines);
+            var slice = new Slice(layer.SemVerName, lines);
 
             var sb = new StringBuilder();
             formatter.Write(slice, sb);
