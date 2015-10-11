@@ -1,0 +1,166 @@
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-I" "bzip2-1.0.6" "-DBZ_NO_STDIO" "-o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/blocksort.o" "-c" "bzip2-1.0.6/blocksort.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-I" "bzip2-1.0.6" "-DBZ_NO_STDIO" "-o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/huffman.o" "-c" "bzip2-1.0.6/huffman.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-I" "bzip2-1.0.6" "-DBZ_NO_STDIO" "-o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/crctable.o" "-c" "bzip2-1.0.6/crctable.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-I" "bzip2-1.0.6" "-DBZ_NO_STDIO" "-o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/randtable.o" "-c" "bzip2-1.0.6/randtable.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-I" "bzip2-1.0.6" "-DBZ_NO_STDIO" "-o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/compress.o" "-c" "bzip2-1.0.6/compress.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-I" "bzip2-1.0.6" "-DBZ_NO_STDIO" "-o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/decompress.o" "-c" "bzip2-1.0.6/decompress.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-I" "bzip2-1.0.6" "-DBZ_NO_STDIO" "-o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/bzlib.o" "-c" "bzip2-1.0.6/bzlib.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+AR_i686-unknown-linux-gnu = None
+AR_i686_unknown_linux_gnu = None
+HOST_AR = None
+AR = None
+TARGET = Some("i686-unknown-linux-gnu")
+running: "ar" "crus" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/libbz2.a" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/blocksort.o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/huffman.o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/crctable.o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/randtable.o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/compress.o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/decompress.o" "/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out/bzip2-1.0.6/bzlib.o"
+ExitStatus(Code(0))
+cargo:rustc-link-lib=static=bz2
+cargo:rustc-link-search=native=/home/owl/sb/impl/rust/target/debug/build/bzip2-sys-ddb661555b966689/out

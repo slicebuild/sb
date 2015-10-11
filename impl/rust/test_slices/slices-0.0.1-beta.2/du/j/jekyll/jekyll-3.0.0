@@ -1,0 +1,8 @@
+OS
+debian
+
+DEPS
+ruby
+
+RUN
+gem install jekyll -v '3.0.0.pre.beta9'

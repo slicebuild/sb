@@ -1,0 +1,2 @@
+cargo:rustc-link-search=native=/usr/lib/i386-linux-gnu
+cargo:rustc-link-lib=z
