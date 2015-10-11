@@ -6,10 +6,11 @@ namespace sb.Slices
 {
     public class Slice
     {
-        public Slice(SemName semName, IList<string> lines)
+        public Slice(SemVerName semVerName, IList<string> lines)
         {
-            SemName = semName;
-            SemVersion = new SemVersion(semName.VersionPart, semName.PreReleasePart);
+            SemVerName = semVerName;
+            //SemName = semName;
+            //SemVersion = new SemVersion(semName.VersionPart, semName.PreReleasePart);
             Sections = new List<SliceSection>();
             OsList = new List<string>();
 
@@ -25,14 +26,13 @@ namespace sb.Slices
             {
                 foreach (var line in s.Lines.Where(l => !l.StartsWith("#")))
                 {
-                    OsList.Add(new SemName(line.Trim()).NamePart.ToLower());
+                    var svn = SemVerNameParser.Parse(line);
+                    OsList.Add(svn.Name);
                 }
             }
         }
 
-        public string Name => SemName.NamePart;
-        public SemName SemName { get; }        
-        public SemVersion SemVersion { get; }        
+        public SemVerName SemVerName { get; }
         public IList<SliceSection> Sections { get; } 
         public IList<string> OsList { get; }        
     }

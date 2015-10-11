@@ -8,10 +8,10 @@ namespace sb.Layers
         //todo: implement priority
         public int Compare(Layer x, Layer y)
         {
-            if (x.Name != y.Name)
-                return string.Compare(x.Name, y.Name, StringComparison.Ordinal);
+            if (x.SemVerName.Name != y.SemVerName.Name)
+                return string.Compare(x.SemVerName.Name, y.SemVerName.Name, StringComparison.Ordinal);
             // compares y to x to get descending ordering
-            return y.SemVersion.CompareTo(x.SemVersion);
+            return (y.SemVerName.NameVersion as IComparable).CompareTo(x.SemVerName.NameVersion);
         }
     }
 }

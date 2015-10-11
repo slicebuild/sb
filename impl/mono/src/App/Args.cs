@@ -42,7 +42,7 @@ namespace sb.App
 
             RootDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             RootDir = RootDir ?? "";
-            EnvDir = Path.Combine(RootDir, ".cb");
+            EnvDir = Path.Combine(RootDir, ".sb");
             SlicesDir = Path.Combine(EnvDir, "slices");
             Command = FindCommand(_command);
         }        
@@ -162,7 +162,7 @@ namespace sb.App
         public string[] GetLayerParams()
         {
             var layerParam = GetParam(0, null);
-            layerParam = layerParam ?? "jekyll"; //todo: change the default to the waybuild image
+            layerParam = layerParam ?? "jekyll"; //todo: change the default to the slicebuild image
             return layerParam.Split(",");
         }
 

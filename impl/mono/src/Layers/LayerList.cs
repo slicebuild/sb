@@ -29,7 +29,7 @@ namespace sb.Layers
         /// <returns></returns>
         public Layer FindLayer(string name)
         {
-            return Find(l => l.Name == name);
+            return Find(l => l.SemVerName.Name == name);
         }
 
         public LayerList FindLayers(string[] names)
@@ -37,7 +37,7 @@ namespace sb.Layers
             var layers = new LayerList();
             foreach (var name in names)
             {
-                layers.AddRange(this.Where(l => l.Name.ToLowerInvariant().Contains(name)));
+                layers.AddRange(this.Where(l => l.SemVerName.Name.ToLowerInvariant().Contains(name)));
             }
             return layers;
         }

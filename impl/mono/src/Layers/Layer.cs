@@ -15,9 +15,7 @@ namespace sb.Layers
             _slice = slice;
         }
 
-        public string Name => _slice.Name;
-        public SemName SemName => _slice.SemName;
-        public SemVersion SemVersion => _slice.SemVersion;
+        public SemVerName SemVerName => _slice.SemVerName;
         public IList<SliceSection> Sections => _slice.Sections;
         public LayerList Dependencies { get; } = new LayerList();
         public bool Written { get; set; }
@@ -28,9 +26,9 @@ namespace sb.Layers
             {
                 foreach (var line in section.Lines)
                 {
-                    var semName = new SemName(line);
-                    var dep = registryLayers.FindLayer(semName.NamePart);
-                    if (dep != null)
+                    var svn = SemVerNameParser.Parse(line);
+                    var dep = registryLayers.FindLayer(svn.Name);
+                    if (dep != null && !Dependencies.Contains(dep))
                     {
                         Dependencies.Add(dep);
                         dep.FindDependenciesRecursive(registryLayers);
@@ -44,11 +42,11 @@ namespace sb.Layers
                 {
                     foreach (var line in section.Lines)
                     {
-                        var semName = new SemName(line);
-                        if (semName.NamePart != Name)
+                        var svn = SemVerNameParser.Parse(line);
+                        if (svn.Name != SemVerName.Name)
                         {
-                            var os = registryLayers.FindLayer(semName.NamePart);
-                            if (os != null)
+                            var os = registryLayers.FindLayer(svn.Name);
+                            if (os != null && !Dependencies.Contains(os))
                             {
                                 Dependencies.Add(os);
                             }
@@ -65,7 +63,7 @@ namespace sb.Layers
             {
                 sb.AppendLine();
                 sb.AppendLine(section.SectionType.ToString());
-                sb.AppendLine($"# {Name}-{SemVersion}");
+                sb.AppendLine($"# {SemVerName}");
                 foreach (var line in section.Lines)
                 {
                     sb.AppendLine(line);
@@ -74,9 +72,20 @@ namespace sb.Layers
             sb.AppendLine();
         }
 
+        public override bool Equals(object obj)
+        {
+            var other = (Layer) obj;
+            return SemVerName.Equals(other.SemVerName);
+        }
+
+        public override int GetHashCode()
+        {
+            return SemVerName.GetHashCode();
+        }
+
         public override string ToString()
         {
-            return _slice.SemName.ToString();
+            return _slice.SemVerName.ToString();
         }
     }
 }
