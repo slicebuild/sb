@@ -1,0 +1,10 @@
+[package]
+name = "sb"
+version = "0.1.0"
+authors = ["Alexey"]
+
+[dependencies]
+curl = "0.2.11"
+rustc-serialize = "0.3.16"
+semver = "0.1.20"
+zip = "0.1.14"

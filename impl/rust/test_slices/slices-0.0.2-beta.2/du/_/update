@@ -1,0 +1,7 @@
+OS
+debian
+ubuntu
+
+RUN
+apt-get update -y
+apt-get install libc6-dev libssl-dev make build-essential libssl-dev libreadline6-dev zlib1g-dev libyaml-dev libz-dev -y

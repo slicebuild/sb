@@ -1,0 +1,9 @@
+OS
+debian
+ubuntu
+
+DEP
+upgrade
+
+RUN
+apt-get install wget -y

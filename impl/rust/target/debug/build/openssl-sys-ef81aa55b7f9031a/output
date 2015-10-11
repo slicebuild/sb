@@ -1,0 +1,59 @@
+cargo:rustc-link-search=native=/usr/lib/i386-linux-gnu
+cargo:rustc-link-lib=ssl
+cargo:rustc-link-lib=crypto
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-o" "/home/owl/sb/impl/rust/target/debug/build/openssl-sys-ef81aa55b7f9031a/out/src/openssl_shim.o" "-c" "src/openssl_shim.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+OPT_LEVEL = Some("0")
+PROFILE = Some("debug")
+TARGET = Some("i686-unknown-linux-gnu")
+debug=true opt-level=0
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CC_i686-unknown-linux-gnu = None
+CC_i686_unknown_linux_gnu = None
+HOST_CC = None
+CC = None
+HOST = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+CFLAGS_i686-unknown-linux-gnu = None
+CFLAGS_i686_unknown_linux_gnu = None
+HOST_CFLAGS = None
+CFLAGS = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-g" "-m32" "-o" "/home/owl/sb/impl/rust/target/debug/build/openssl-sys-ef81aa55b7f9031a/out/ssl_ctx_options_shim.o" "-c" "/home/owl/sb/impl/rust/target/debug/build/openssl-sys-ef81aa55b7f9031a/out/ssl_ctx_options_shim.c"
+ExitStatus(Code(0))
+TARGET = Some("i686-unknown-linux-gnu")
+TARGET = Some("i686-unknown-linux-gnu")
+HOST = Some("i686-unknown-linux-gnu")
+AR_i686-unknown-linux-gnu = None
+AR_i686_unknown_linux_gnu = None
+HOST_AR = None
+AR = None
+TARGET = Some("i686-unknown-linux-gnu")
+running: "ar" "crus" "/home/owl/sb/impl/rust/target/debug/build/openssl-sys-ef81aa55b7f9031a/out/libopenssl_shim.a" "/home/owl/sb/impl/rust/target/debug/build/openssl-sys-ef81aa55b7f9031a/out/src/openssl_shim.o" "/home/owl/sb/impl/rust/target/debug/build/openssl-sys-ef81aa55b7f9031a/out/ssl_ctx_options_shim.o"
+ExitStatus(Code(0))
+cargo:rustc-link-lib=static=openssl_shim
+cargo:rustc-link-search=native=/home/owl/sb/impl/rust/target/debug/build/openssl-sys-ef81aa55b7f9031a/out
