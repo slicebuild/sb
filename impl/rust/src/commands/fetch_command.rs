@@ -8,11 +8,11 @@ use std::path::{Path, PathBuf};
 use zip::read::ZipArchive;
 use super::command::Command;
 
-pub struct FetchCommand {
-    pub slices_directory: String
+pub struct FetchCommand<'a> {
+    pub slice_root_directory: &'a Path
 }
 
-impl FetchCommand {
+impl<'a> FetchCommand<'a> {
     fn choose_latest_version(array: &Vec<Json>) -> Version {
         let mut latest_version: Option<Version> = None;
         assert!(!array.is_empty());
@@ -83,11 +83,11 @@ impl FetchCommand {
     }
 }
 
-impl Command for FetchCommand {
+impl<'a> Command for FetchCommand<'a> {
     fn run(&mut self) {
         let bytes = FetchCommand::download_latest_version();
         let cursor = Cursor::new(bytes);
         let zip_archive = ZipArchive::new(cursor).unwrap();
-        FetchCommand::extract_archive_into_directory(zip_archive, Path::new(&self.slices_directory).to_path_buf());
+        FetchCommand::extract_archive_into_directory(zip_archive, self.slice_root_directory.to_path_buf());
     }
 }

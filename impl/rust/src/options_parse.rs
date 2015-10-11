@@ -46,12 +46,12 @@ impl Options {
     }
 }
 
-pub fn parse_options() -> (Options, Vec<String>) {
+pub fn parse_options() -> (String, Options, Vec<String>) {
     let options = Options { format: String::new(), outdir: String::new(), url: String::new() };
     let options = RefCell::new(options);
 
     let mut args = env::args();
-    args.next(); // Skip first because first is program
+    let app_path = args.next().unwrap();
 
     let mut current_option_name: Option<String> = Option::None;
     let mut remaining_arguments: Vec<String> = Vec::new();
@@ -86,5 +86,5 @@ pub fn parse_options() -> (Options, Vec<String>) {
         }
     }
 
-    (options.into_inner(), remaining_arguments)
+    (app_path, options.into_inner(), remaining_arguments)
 }

@@ -1,14 +1,14 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
-use std::fs::{File, metadata, read_dir};
+use std::fs::{DirEntry, File, metadata, read_dir};
 use std::io::Read;
 use std::path::{Path};
 use semver::{Version};
 use super::section::{Kind, Section};
 use super::item::Slice;
 
-pub fn get_latest_slice_directories(slices_directory: &Path) -> Vec<String> {
-    let directories = read_dir(&slices_directory).unwrap().filter(|entry| {
+pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<String>, String> {
+    let directories: Vec<DirEntry> = read_dir(&slices_directory).unwrap().filter(|entry| {
         match *entry {
             Ok(ref entry) => {
                 let entry_path = entry.path();
@@ -17,46 +17,55 @@ pub fn get_latest_slice_directories(slices_directory: &Path) -> Vec<String> {
             },
             Err(_) => false
         }
-    });
-    let mut slices_directories: HashMap<u64, Vec<SliceDirectory>> = HashMap::new();
-    for directory in directories {
-        let directory = directory.unwrap().path();
-        let directory_name = directory.file_name().unwrap().to_str().unwrap().to_string();
-        let (_, slice_version) = get_slice_name_and_version_from_string(&directory_name);
-        let slice_version = slice_version.unwrap();
-        let major = slice_version.major;
-        let slice_directory = SliceDirectory { name: directory_name, version: slice_version };
-        if slices_directories.contains_key(&major) {
-            let mut slices_directories_for_version = slices_directories.get_mut(&major).unwrap();
-            slices_directories_for_version.push(slice_directory);
-        } else {
-            let mut slices_directories_for_version = Vec::new();
-            slices_directories_for_version.push(slice_directory);
-            slices_directories.insert(major, slices_directories_for_version);
+    }).map(|entry| entry.unwrap()).collect();
+    if directories.is_empty() {
+        Err("There are no any slices".to_string())
+    } else {
+        let mut slice_directories: HashMap<u64, Vec<SliceDirectory>> = HashMap::new();
+        for directory in directories {
+            let directory = directory.path();
+            let directory_name = directory.file_name().unwrap().to_str().unwrap().to_string();
+            let (_, slice_version) = get_slice_name_and_version_from_string(&directory_name);
+            let slice_version = slice_version.unwrap();
+            let major = slice_version.major;
+            let slice_directory = SliceDirectory { name: directory_name, version: slice_version };
+            if slice_directories.contains_key(&major) {
+                let mut slice_directories_for_version = slice_directories.get_mut(&major).unwrap();
+                slice_directories_for_version.push(slice_directory);
+            } else {
+                let mut slice_directories_for_version = Vec::new();
+                slice_directories_for_version.push(slice_directory);
+                slice_directories.insert(major, slice_directories_for_version);
+            }
         }
+        assert!(!slice_directories.is_empty());
+        let (_, mut slice_directories) = slice_directories.into_iter().max().unwrap();
+        slice_directories.sort_by(|a, b| a.version.cmp(&b.version));
+        let slice_directories = slice_directories.into_iter().map(|directory| directory.name).collect();
+        Ok(slice_directories)
     }
-    assert!(!slices_directories.is_empty());
-    let (_, mut slices_directories) = slices_directories.into_iter().max().unwrap();
-    slices_directories.sort_by(|a, b| a.version.cmp(&b.version));
-    slices_directories.into_iter().map(|directory| directory.name).collect()
 }
 
-pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path) -> Vec<Slice> {
-    let slice_directories = get_latest_slice_directories(&slice_root_directory);
-    let mut slices: Vec<Slice> = Vec::new();
-    for directory in slice_directories {
-        let mut path = slice_root_directory.to_path_buf();
-        path.push(&directory);
-        let slices_from_directory = get_slices_from_directory(&path);
-        for slice in slices_from_directory {
-            let added_before_slice_position = slices.iter().position(|other| other.name == slice.name);
-            if let Some(added_before_slice_position) = added_before_slice_position {
-                slices.remove(added_before_slice_position);
+pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path) -> Result<Vec<Slice>, String> {
+    match get_latest_slice_directories(&slice_root_directory) {
+        Ok(slice_directories) => {
+            let mut slices: Vec<Slice> = Vec::new();
+            for directory in slice_directories {
+                let mut path = slice_root_directory.to_path_buf();
+                path.push(&directory);
+                let slices_from_directory = get_slices_from_directory(&path);
+                for slice in slices_from_directory {
+                    let added_before_slice_position = slices.iter().position(|other| other.name == slice.name);
+                    if let Some(added_before_slice_position) = added_before_slice_position {
+                        slices.remove(added_before_slice_position);
+                    }
+                    slices.push(slice);
+                }
             }
-            slices.push(slice);
-        }
+            Ok(slices)
+        },
+        Err(error) => Err(error)
     }
-    slices
 }
 
 pub fn get_slices_from_directory(directory: &Path) -> Vec<Slice> {
@@ -242,13 +251,6 @@ fn test_get_slices_from_directory() {
 //    let latest_slice_directory = choose_latest_slice_directory_in_directory(&path, true).unwrap();
 //    assert_eq!(latest_slice_directory, "/home/owl/sb/impl/rust/test_slices/slices-custom-0.0.2-beta.2");
 //}
-
-#[test]
-fn test_get_latest_slice_directory_version_in_slices_directory() {
-    let path = Path::new("/home/owl/sb/impl/rust/test_slices");
-    let version = get_latest_slice_directory_version_in_slices_directory(&path);
-    assert_eq!(version, Version::parse("0.0.2-beta.2").unwrap());
-}
 
 #[test]
 fn test_get_latest_slice_directories() {
