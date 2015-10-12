@@ -4,6 +4,7 @@ use std::fs::{DirEntry, File, metadata, read_dir};
 use std::io::Read;
 use std::path::{Path};
 use semver::{Version};
+#[cfg(test)]
 use super::section::Kind;
 use super::section::Section;
 use super::item::Slice;

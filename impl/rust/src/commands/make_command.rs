@@ -83,7 +83,7 @@ ruby setup.rb
 gem install jekyll -v '3.0.0.pre.beta9'
 ";
 	let slice_root_directory = get_slice_root_directory();
-	let mut command = MakeCommand { layer: "jekyll".to_string(), os: "debian".to_string(), slice_root_directory: &slice_root_directory };
+	let command = MakeCommand { layer: "jekyll".to_string(), os: "debian".to_string(), slice_root_directory: &slice_root_directory };
 	let returned_code = command.get_code_for_latest_slice().unwrap();
 	assert_eq!(returned_code, expected_code);
 }

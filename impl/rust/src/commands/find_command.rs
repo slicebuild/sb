@@ -1,6 +1,3 @@
-use std::env::current_dir;
-use std::fs::metadata;
-use std::io::ErrorKind;
 use std::path::Path;
 use super::helper::check_slice_root_exists;
 use super::command::Command;

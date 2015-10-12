@@ -1,5 +1,5 @@
 use std::io::ErrorKind;
-use std::fs::{metadata, Metadata};
+use std::fs::metadata;
 use std::path::Path;
 
 pub fn check_slice_root_exists(slice_root_directory: &Path) {

@@ -99,7 +99,7 @@ fn section_load_from_lines_works() {
     assert_eq!(section.kind, Kind::Os);
     assert_eq!(section.items.len(), 1);
     assert_eq!(section.items.first().unwrap(), "debian-8.2");
-    let (section, lines) = Section::load_from_lines(lines);
+    let (section, _) = Section::load_from_lines(lines);
     let section = section.unwrap();
     assert_eq!(section.kind, Kind::From);
     assert_eq!(section.items.len(), 1);
