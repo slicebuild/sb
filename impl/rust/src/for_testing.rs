@@ -10,7 +10,7 @@ pub fn get_slice_root_directory() -> PathBuf {
 		"release"
 	};
 	slice_root_directory.push(build_type);
-	slice_root_directory.push(".cb");
+	slice_root_directory.push(".sb");
 	slice_root_directory.push("slices");
 	slice_root_directory.to_path_buf()
 }

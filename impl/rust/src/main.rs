@@ -48,7 +48,7 @@ fn run_command<T>(mut command: T) where T : Command {
 fn get_slice_root_directory(app_path: & String) -> PathBuf {
     let mut slice_root_directory = PathBuf::new();
     slice_root_directory.push(Path::new(&app_path).parent().unwrap());
-    slice_root_directory.push(".cb");
+    slice_root_directory.push(".sb");
     slice_root_directory.push("slices");
     slice_root_directory
 }
