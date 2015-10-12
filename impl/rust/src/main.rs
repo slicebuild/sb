@@ -3,6 +3,7 @@ use sb::options_parse::parse_options;
 use sb::commands::command::Command;
 use sb::commands::fetch_command::FetchCommand;
 use sb::commands::find_command::FindCommand;
+use sb::commands::make_command::MakeCommand;
 use std::env::current_dir;
 use std::path::{Path, PathBuf};
 
@@ -29,6 +30,12 @@ fn main() {
         },
         "fetch" => {
             run_command(FetchCommand { slice_root_directory: slice_root_directory })
+        },
+        "make" => {
+            assert!(arguments.len() == 2);
+            let os = arguments.remove(0);
+            let layer = arguments.remove(0);
+            run_command(MakeCommand { layer: layer, os: os, slice_root_directory: slice_root_directory })
         },
         _ => panic!()
     };
