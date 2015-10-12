@@ -1,5 +1,4 @@
 ﻿using System;
-using sb_bbt.App;
 
 namespace sb_bbt
 {
@@ -9,9 +8,10 @@ namespace sb_bbt
         {
             try
             {
-                new Args().Run();
+                new App().Run();
                 Console.WriteLine();
-                Console.WriteLine("Done!");
+                Console.WriteLine("Done! Press any key to exit");
+                Console.ReadLine();
             }
             catch (Exception ex)
             {

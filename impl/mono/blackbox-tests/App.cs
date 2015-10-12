@@ -1,15 +1,21 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using sb_bbt.Tests.Fetch;
+using sb_bbt.Tests.Make;
 
-namespace sb_bbt.App
+namespace sb_bbt
 {
-    public class Args
+    public class App
     {
         public string RootDir { get; }
         public string EnvDir { get; }
         public string SlicesDir { get; }
 
-        public Args()
+        public IList<string> Passed { get; } = new List<string>();
+        public IList<string> Failed { get; } = new List<string>();
+
+        public App()
         {
             RootDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             RootDir = RootDir ?? "";
@@ -19,7 +25,8 @@ namespace sb_bbt.App
 
         public void Run()
         {
-            
+            new TestFetch(this).Run();
+            new TestMake(this).Run();
         } 
     }
 }
