@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using sb_bbt.Tests.Fetch;
+using sb_bbt.Tests.Find;
 using sb_bbt.Tests.Make;
 
 namespace sb_bbt
@@ -27,6 +28,7 @@ namespace sb_bbt
         public void Run()
         {
             new TestFetch(this).Run();
+            new TestFind(this).Run();
             new TestMake(this).Run();
 
             Console.WriteLine();

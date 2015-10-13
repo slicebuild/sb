@@ -40,9 +40,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\Fetch\TestFetch.cs" />
+    <Compile Include="Tests\Find\TestFind.cs" />
     <Compile Include="Tests\Make\TestMake.cs" />
     <Compile Include="Tests\Test.cs" />
     <Compile Include="Utils\Fs.cs" />
+    <Compile Include="Utils\Text.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
