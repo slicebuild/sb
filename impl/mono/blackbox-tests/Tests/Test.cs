@@ -32,7 +32,10 @@ namespace sb_bbt.Tests
             var s = passed ? Passed : Failed;
             Console.WriteLine($"Finished {GetType().Name} : {s}");
             if (passed)
+            {
                 App.Passed.Add(GetType().Name);
+                return;
+            }
             App.Failed.Add(GetType().Name);
         }
     }

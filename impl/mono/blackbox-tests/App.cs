@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using sb_bbt.Tests.Fetch;
@@ -27,7 +28,12 @@ namespace sb_bbt
         {
             new TestFetch(this).Run();
             new TestMake(this).Run();
-        } 
+
+            Console.WriteLine();
+            Console.WriteLine($"PASSED: {Passed.Count}");
+            Console.WriteLine($"FAILED: {Failed.Count}");
+            Console.WriteLine();
+        }
 
     }
 }
