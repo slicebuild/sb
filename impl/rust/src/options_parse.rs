@@ -5,7 +5,7 @@ use std::env;
 pub struct Options {
     format: String,
     outdir: String,
-    url: String
+    url: String,
 }
 
 impl Options {
@@ -26,7 +26,8 @@ impl Options {
         let outdir_option_name = Options::get_outdir_option_name();
         let url_option_name = Options::get_url_option_name();
 
-        option_name == format_option_name || option_name == outdir_option_name || option_name == url_option_name
+        option_name == format_option_name || option_name == outdir_option_name ||
+        option_name == url_option_name
     }
 
     fn set_option(&mut self, option_name: String, option_value: String) {
@@ -47,7 +48,11 @@ impl Options {
 }
 
 pub fn parse_options() -> (String, Options, Vec<String>) {
-    let options = Options { format: String::new(), outdir: String::new(), url: String::new() };
+    let options = Options {
+        format: String::new(),
+        outdir: String::new(),
+        url: String::new(),
+    };
     let options = RefCell::new(options);
 
     let mut args = env::args();

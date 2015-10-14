@@ -9,7 +9,7 @@ use zip::read::ZipArchive;
 use super::command::Command;
 
 pub struct FetchCommand<'a> {
-    pub slice_root_directory: &'a Path
+    pub slice_root_directory: &'a Path,
 }
 
 impl<'a> FetchCommand<'a> {
@@ -46,7 +46,8 @@ impl<'a> FetchCommand<'a> {
     }
 
     fn determine_latest_version() -> Version {
-        let body = FetchCommand::execute_request_to_uri("https://api.github.com/repos/slicebuild/slices/branches");
+        let body = FetchCommand::execute_request_to_uri("https://api.github.\
+                                                         com/repos/slicebuild/slices/branches");
         let body = String::from_utf8(body).unwrap();
         let json = Json::from_str(&body).unwrap();
         let array = json.as_array().unwrap();
@@ -55,11 +56,13 @@ impl<'a> FetchCommand<'a> {
 
     fn download_latest_version() -> Vec<u8> {
         let version = FetchCommand::determine_latest_version();
-        let uri = format!("https://codeload.github.com/slicebuild/slices/zip/{}", version);
+        let uri = format!("https://codeload.github.com/slicebuild/slices/zip/{}",
+                          version);
         FetchCommand::execute_request_to_uri(&uri)
     }
 
-    fn extract_archive_into_directory(mut zip_archive: ZipArchive<Cursor<Vec<u8>>>, path: PathBuf) {
+    fn extract_archive_into_directory(mut zip_archive: ZipArchive<Cursor<Vec<u8>>>,
+                                      path: PathBuf) {
         for i in 0..zip_archive.len() {
             let mut path = path.clone();
             let mut file = zip_archive.by_index(i).unwrap();
@@ -88,6 +91,7 @@ impl<'a> Command for FetchCommand<'a> {
         let bytes = FetchCommand::download_latest_version();
         let cursor = Cursor::new(bytes);
         let zip_archive = ZipArchive::new(cursor).unwrap();
-        FetchCommand::extract_archive_into_directory(zip_archive, self.slice_root_directory.to_path_buf());
+        FetchCommand::extract_archive_into_directory(zip_archive,
+                                                     self.slice_root_directory.to_path_buf());
     }
 }

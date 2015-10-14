@@ -1,14 +1,14 @@
 use std::path::Path;
 use super::helper::check_slice_root_exists;
 use super::command::Command;
-use super::super::slice::directory::{get_latest_slices_from_slice_root_directory};
+use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 #[cfg(test)]
 use super::super::for_testing::get_slice_root_directory;
 
 pub struct FindCommand<'a> {
     pub layer: String,
     pub os: String,
-    pub slice_root_directory: &'a Path
+    pub slice_root_directory: &'a Path,
 }
 
 impl<'a> Command for FindCommand<'a> {
@@ -23,8 +23,8 @@ impl<'a> Command for FindCommand<'a> {
                 for slice in slices {
                     println!("{}", slice.name);
                 }
-            },
-            Err(error) => println!("{}", error)
+            }
+            Err(error) => println!("{}", error),
         }
     }
 }
@@ -32,6 +32,10 @@ impl<'a> Command for FindCommand<'a> {
 #[test]
 fn test_find_command_run() {
     let slice_root_directory = get_slice_root_directory();
-    let mut command = FindCommand { layer: "jekyll".to_string(), os: "debian".to_string(), slice_root_directory: &slice_root_directory };
+    let mut command = FindCommand {
+        layer: "jekyll".to_string(),
+        os: "debian".to_string(),
+        slice_root_directory: &slice_root_directory,
+    };
     command.run();
 }
