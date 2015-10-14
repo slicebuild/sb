@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::Write;
 use std::path::Path;
 use super::command::Command;
 #[cfg(test)]
@@ -9,6 +11,7 @@ use super::super::slice::section::Kind;
 pub struct MakeCommand<'a> {
     pub layer: String,
     pub os: String,
+    pub root_directory: &'a Path,
     pub slice_root_directory: &'a Path,
 }
 
@@ -62,8 +65,17 @@ impl<'a> MakeCommand<'a> {
 impl<'a> Command for MakeCommand<'a> {
     fn run(&mut self) {
         match self.get_code_for_latest_slice() {
-            Ok(code) => println!("Code = {}", code),
-            Err(error) => println!("Error = {}", error),
+            Ok(code) => {
+                let mut path = self.root_directory.to_path_buf();
+                path.push(&self.layer);
+                let path_as_string = path.to_str().unwrap().to_string();
+                if let Ok(mut file) = File::create(path) {
+                    file.write_fmt(format_args!("{}", &code));
+                } else {
+                    panic!("File cannot be created at path {}", &path_as_string);
+                }
+            }
+            Err(error) => panic!("{}", error)
         }
     }
 }

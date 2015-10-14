@@ -5,7 +5,7 @@ use sb::commands::fetch_command::FetchCommand;
 use sb::commands::find_command::FindCommand;
 use sb::commands::make_command::MakeCommand;
 use std::env::current_dir;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 const DEFAULT_OS: &'static str = "debian";
 const DEFAULT_LAYER: &'static str = "jekyll";
@@ -13,13 +13,8 @@ const DEFAULT_LAYER: &'static str = "jekyll";
 fn main() {
     let (app_path, options, mut arguments) = parse_options();
 
-    let mut slice_root_directory = get_slice_root_directory(&app_path);
-    if slice_root_directory.is_relative() {
-        let mut new_slice_root_directory = current_dir().unwrap();
-        new_slice_root_directory.push(slice_root_directory);
-        slice_root_directory = new_slice_root_directory;
-    }
-    let slice_root_directory = &*slice_root_directory;
+    let root_directory = get_root_directory(&app_path);
+    let slice_root_directory = get_slice_root_directory(&root_directory);
 
     if arguments.is_empty() {
         panic!("Command expected")
@@ -33,11 +28,11 @@ fn main() {
                 run_command(FindCommand {
                     layer: layer,
                     os: os,
-                    slice_root_directory: slice_root_directory,
+                    slice_root_directory: &slice_root_directory,
                 })
             }
             "fetch" => {
-                run_command(FetchCommand { slice_root_directory: slice_root_directory })
+                run_command(FetchCommand { slice_root_directory: &slice_root_directory })
             }
             "make" => {
                 let os = get_os_from_arguments_or_default(&mut arguments);
@@ -45,7 +40,8 @@ fn main() {
                 run_command(MakeCommand {
                     layer: layer,
                     os: os,
-                    slice_root_directory: slice_root_directory,
+                    root_directory: &root_directory,
+                    slice_root_directory: &slice_root_directory,
                 })
             }
             _ => panic!()
@@ -74,10 +70,21 @@ fn run_command<T>(mut command: T)
     command.run()
 }
 
-fn get_slice_root_directory(app_path: &String) -> PathBuf {
-    let mut slice_root_directory = PathBuf::new();
-    slice_root_directory.push(Path::new(&app_path).parent().unwrap());
-    slice_root_directory.push(".sb");
+fn get_root_directory(app_path: &str) -> PathBuf {
+    let mut root_directory = PathBuf::new();
+    root_directory.push(app_path);
+    if root_directory.is_relative() {
+        let mut new_root_directory = current_dir().unwrap();
+        new_root_directory.push(root_directory);
+        root_directory = new_root_directory;
+    }
+    assert_eq!(root_directory.pop(), true);
+    root_directory.push(".sb");
+    root_directory
+}
+
+fn get_slice_root_directory(root_directory: &PathBuf) -> PathBuf {
+    let mut slice_root_directory = root_directory.clone();
     slice_root_directory.push("slices");
     slice_root_directory
 }
