@@ -28,7 +28,9 @@ namespace sb_bbt
         public void Run()
         {
             new TestFetch(this).Run();
+            new TestFetchDeep(this).Run();
             new TestFind(this).Run();
+            new TestFindRandom(this).Run();
             new TestMake(this).Run();
 
             Console.WriteLine();

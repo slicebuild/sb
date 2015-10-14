@@ -39,7 +39,9 @@
     <Compile Include="App.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\Fetch\TestFetchDeep.cs" />
     <Compile Include="Tests\Fetch\TestFetch.cs" />
+    <Compile Include="Tests\Find\TestFindRandom.cs" />
     <Compile Include="Tests\Find\TestFind.cs" />
     <Compile Include="Tests\Make\TestMake.cs" />
     <Compile Include="Tests\Test.cs" />
