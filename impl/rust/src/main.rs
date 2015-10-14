@@ -26,26 +26,36 @@ fn main() {
             assert!(arguments.len() == 2);
             let os = arguments.remove(0);
             let layer = arguments.remove(0);
-            run_command(FindCommand { layer: layer, os: os, slice_root_directory: slice_root_directory })
-        },
+            run_command(FindCommand {
+                layer: layer,
+                os: os,
+                slice_root_directory: slice_root_directory,
+            })
+        }
         "fetch" => {
             run_command(FetchCommand { slice_root_directory: slice_root_directory })
-        },
+        }
         "make" => {
             assert!(arguments.len() == 2);
             let os = arguments.remove(0);
             let layer = arguments.remove(0);
-            run_command(MakeCommand { layer: layer, os: os, slice_root_directory: slice_root_directory })
-        },
-        _ => panic!()
+            run_command(MakeCommand {
+                layer: layer,
+                os: os,
+                slice_root_directory: slice_root_directory,
+            })
+        }
+        _ => panic!(),
     };
 }
 
-fn run_command<T>(mut command: T) where T : Command {
+fn run_command<T>(mut command: T)
+    where T: Command
+{
     command.run()
 }
 
-fn get_slice_root_directory(app_path: & String) -> PathBuf {
+fn get_slice_root_directory(app_path: &String) -> PathBuf {
     let mut slice_root_directory = PathBuf::new();
     slice_root_directory.push(Path::new(&app_path).parent().unwrap());
     slice_root_directory.push(".sb");

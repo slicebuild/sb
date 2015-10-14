@@ -5,7 +5,7 @@ use semver::Version;
 pub struct Slice {
     pub name: String,
     pub version: Option<Version>,
-    pub sections: Vec<Section>
+    pub sections: Vec<Section>,
 }
 
 impl Slice {
@@ -37,7 +37,11 @@ fn slice_get_os_list_works() {
         lines = remaining_lines;
     }
     assert_eq!(sections.len(), 2);
-    let slice = Slice { name: "Slice".to_string(), version: Some(Version::parse("0.0.0").unwrap()), sections: sections };
+    let slice = Slice {
+        name: "Slice".to_string(),
+        version: Some(Version::parse("0.0.0").unwrap()),
+        sections: sections,
+    };
     let os_list = slice.get_os_list();
     assert_eq!(os_list.len(), 1);
     let os = os_list.first().unwrap();

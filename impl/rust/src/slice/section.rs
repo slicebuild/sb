@@ -16,7 +16,7 @@ pub enum Kind {
     Run,
     User,
     Volume,
-    WorkDir
+    WorkDir,
 }
 
 impl Kind {
@@ -39,7 +39,7 @@ impl Kind {
             "USER" => Some(Kind::User),
             "VOLUME" => Some(Kind::Volume),
             "WORKDIR" => Some(Kind::WorkDir),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -47,7 +47,7 @@ impl Kind {
 #[derive(Debug)]
 pub struct Section {
     pub kind: Kind,
-    pub items: Vec<String>
+    pub items: Vec<String>,
 }
 
 impl Section {
@@ -78,7 +78,10 @@ impl Section {
             }
         }
         if let Some(section_type) = section_type {
-            let section = Section { kind: section_type, items: items };
+            let section = Section {
+                kind: section_type,
+                items: items,
+            };
             (Some(section), remaining_lines)
         } else {
             (None, remaining_lines)
