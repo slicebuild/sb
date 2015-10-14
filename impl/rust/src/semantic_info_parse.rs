@@ -60,14 +60,28 @@ impl SemanticInfo {
         if let Some(dash_position) = string.find('-') {
             if dash_position < dot_position {
                 let (name, string) = SemanticInfo::extract_name_from_string(string);
-                let (version, prerelease) = SemanticInfo::extract_version_and_prerelease_from_string(string);
-                SemanticInfo { name: name, version: version, prerelease: prerelease }
+                let (version, prerelease) =
+                    SemanticInfo::extract_version_and_prerelease_from_string(string);
+                SemanticInfo {
+                    name: name,
+                    version: version,
+                    prerelease: prerelease,
+                }
             } else {
-                let (version, prerelease) = SemanticInfo::extract_version_and_prerelease_from_string(string);
-                SemanticInfo { name: String::new(), version: version, prerelease: prerelease }
+                let (version, prerelease) =
+                    SemanticInfo::extract_version_and_prerelease_from_string(string);
+                SemanticInfo {
+                    name: String::new(),
+                    version: version,
+                    prerelease: prerelease,
+                }
             }
         } else {
-            SemanticInfo { name: String::new(), version: string, prerelease: String::new() }
+            SemanticInfo {
+                name: String::new(),
+                version: string,
+                prerelease: String::new(),
+            }
         }
     }
 

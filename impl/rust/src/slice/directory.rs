@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs::{DirEntry, File, metadata, read_dir};
 use std::io::Read;
-use std::path::{Path};
-use semver::{Version};
+use std::path::Path;
+use semver::Version;
 #[cfg(test)]
 use super::section::Kind;
 use super::section::Section;
@@ -12,16 +12,20 @@ use super::item::Slice;
 use super::super::for_testing::get_slice_root_directory;
 
 pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<String>, String> {
-    let directories: Vec<DirEntry> = read_dir(&slices_directory).unwrap().filter(|entry| {
-        match *entry {
-            Ok(ref entry) => {
-                let entry_path = entry.path();
-                let metadata = metadata(entry_path).unwrap();
-                metadata.is_dir()
-            },
-            Err(_) => false
-        }
-    }).map(|entry| entry.unwrap()).collect();
+    let directories: Vec<DirEntry> = read_dir(&slices_directory)
+                                         .unwrap()
+                                         .filter(|entry| {
+                                             match *entry {
+                                                 Ok(ref entry) => {
+                                                     let entry_path = entry.path();
+                                                     let metadata = metadata(entry_path).unwrap();
+                                                     metadata.is_dir()
+                                                 }
+                                                 Err(_) => false,
+                                             }
+                                         })
+                                         .map(|entry| entry.unwrap())
+                                         .collect();
     if directories.is_empty() {
         Err("There are no any slices".to_string())
     } else {
@@ -32,7 +36,10 @@ pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<Strin
             let (_, slice_version) = get_slice_name_and_version_from_string(&directory_name);
             let slice_version = slice_version.unwrap();
             let major = slice_version.major;
-            let slice_directory = SliceDirectory { name: directory_name, version: slice_version };
+            let slice_directory = SliceDirectory {
+                name: directory_name,
+                version: slice_version,
+            };
             if slice_directories.contains_key(&major) {
                 let mut slice_directories_for_version = slice_directories.get_mut(&major).unwrap();
                 slice_directories_for_version.push(slice_directory);
@@ -45,12 +52,15 @@ pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<Strin
         assert!(!slice_directories.is_empty());
         let (_, mut slice_directories) = slice_directories.into_iter().max().unwrap();
         slice_directories.sort_by(|a, b| a.version.cmp(&b.version));
-        let slice_directories = slice_directories.into_iter().map(|directory| directory.name).collect();
+        let slice_directories = slice_directories.into_iter()
+                                                 .map(|directory| directory.name)
+                                                 .collect();
         Ok(slice_directories)
     }
 }
 
-pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path) -> Result<Vec<Slice>, String> {
+pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path)
+                                                   -> Result<Vec<Slice>, String> {
     match get_latest_slice_directories(&slice_root_directory) {
         Ok(slice_directories) => {
             let mut slices: Vec<Slice> = Vec::new();
@@ -59,7 +69,9 @@ pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path) 
                 path.push(&directory);
                 let slices_from_directory = get_slices_from_directory(&path);
                 for slice in slices_from_directory {
-                    let added_before_slice_position = slices.iter().position(|other| other.name == slice.name);
+                    let added_before_slice_position = slices.iter().position(|other| {
+                        other.name == slice.name
+                    });
                     if let Some(added_before_slice_position) = added_before_slice_position {
                         slices.remove(added_before_slice_position);
                     }
@@ -67,8 +79,8 @@ pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path) 
                 }
             }
             Ok(slices)
-        },
-        Err(error) => Err(error)
+        }
+        Err(error) => Err(error),
     }
 }
 
@@ -80,7 +92,7 @@ pub fn get_slices_from_directory(directory: &Path) -> Vec<Slice> {
 
 struct SliceDirectory {
     name: String,
-    version: Version
+    version: Version,
 }
 
 impl PartialEq<SliceDirectory> for SliceDirectory {
@@ -155,7 +167,7 @@ fn get_slice_from_file_path(file_path: &Path) -> Option<Slice> {
         let file_extension = file_extension.to_str().unwrap();
         match file_extension {
             "md" | "txt" => None,
-            _ => get_slice_from_checked_file_path(&file_path)
+            _ => get_slice_from_checked_file_path(&file_path),
         }
     } else {
         get_slice_from_checked_file_path(&file_path)
@@ -166,7 +178,9 @@ fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
     let mut file = File::open(file_path).unwrap();
     let mut content = String::new();
     let _ = file.read_to_string(&mut content).unwrap();
-    let mut lines: Vec<String> = content.split('\n').map(|n: &str| n.to_string().trim().to_string()).collect();
+    let mut lines: Vec<String> = content.split('\n')
+                                        .map(|n: &str| n.to_string().trim().to_string())
+                                        .collect();
     let mut sections: Vec<Section> = Vec::new();
     while !lines.is_empty() {
         let (section, remaining_lines) = Section::load_from_lines(lines);
@@ -179,7 +193,11 @@ fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
     }
     let file_stem = &file_path.file_stem().unwrap().to_str().unwrap().to_string();
     let (slice_name, version) = get_slice_name_and_version_from_string(file_stem);
-    let slice = Slice { name: slice_name, version: version, sections: sections };
+    let slice = Slice {
+        name: slice_name,
+        version: version,
+        sections: sections,
+    };
     Some(slice)
 }
 
@@ -210,16 +228,16 @@ fn test_get_slice_from_file_path_for_correct_file() {
         for section in &slice.sections {
             match section.kind {
                 Kind::Dep => {
-                assert_eq!(section.items.len(), 1);
-                assert_eq!(section.items.first().unwrap(), "upgrade");
-                },
+                    assert_eq!(section.items.len(), 1);
+                    assert_eq!(section.items.first().unwrap(), "upgrade");
+                }
                 Kind::Run => {
                     assert_eq!(section.items.len(), 1);
-                    assert_eq!(section.items.first().unwrap(), "apt-get install wget -y");
-                },
-                Kind::Os => {
-                },
-                _ => panic!()
+                    assert_eq!(section.items.first().unwrap(),
+                               "apt-get install wget -y");
+                }
+                Kind::Os => {}
+                _ => panic!(),
             }
         }
     } else {
@@ -264,6 +282,6 @@ fn test_get_latest_slice_directories() {
     let path = get_slice_root_directory();
     match get_latest_slice_directories(&path) {
         Ok(directories) => assert_eq!(directories, vec!("slices-0.0.1-beta.2")),
-        Err(error) => panic!(error)
+        Err(error) => panic!(error),
     }
 }

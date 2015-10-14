@@ -21,29 +21,36 @@ fn main() {
     }
     let slice_root_directory = &*slice_root_directory;
 
-    assert!(arguments.len() != 0);
-    let command = arguments.remove(0);
-    let command: &str = &command;
-    match command {
-        "find" => {
-            let os = get_os_from_arguments_or_default(&mut arguments);
-            let layer = get_layer_from_arguments_or_default(&mut arguments);
-            run_command(FindCommand { layer: layer, os: os, slice_root_directory: slice_root_directory })
-        },
-        "fetch" => {
-            run_command(FetchCommand { slice_root_directory: slice_root_directory })
-        },
-        "make" => {
-            let os = get_os_from_arguments_or_default(&mut arguments);
-            let layer = get_layer_from_arguments_or_default(&mut arguments);
-            run_command(MakeCommand { layer: layer, os: os, slice_root_directory: slice_root_directory })
-        },
-        _ => panic!()
-    };
-}
-
-fn run_command<T>(mut command: T) where T : Command {
-    command.run()
+    if arguments.is_empty() {
+        panic!("Command expected")
+    } else {
+        let command = arguments.remove(0);
+        let command: &str = &command;
+        match command {
+            "find" => {
+                let os = get_os_from_arguments_or_default(&mut arguments);
+                let layer = get_layer_from_arguments_or_default(&mut arguments);
+                run_command(FindCommand {
+                    layer: layer,
+                    os: os,
+                    slice_root_directory: slice_root_directory,
+                })
+            }
+            "fetch" => {
+                run_command(FetchCommand { slice_root_directory: slice_root_directory })
+            }
+            "make" => {
+                let os = get_os_from_arguments_or_default(&mut arguments);
+                let layer = get_layer_from_arguments_or_default(&mut arguments);
+                run_command(MakeCommand {
+                    layer: layer,
+                    os: os,
+                    slice_root_directory: slice_root_directory,
+                })
+            }
+            _ => panic!()
+        }
+    }
 }
 
 fn pop_first_argument_or_take_default(arguments: &mut Vec<String>, default_value: String) -> String {
@@ -62,7 +69,12 @@ fn get_layer_from_arguments_or_default(arguments: &mut Vec<String>) -> String {
     pop_first_argument_or_take_default(arguments, DEFAULT_LAYER.to_string())
 }
 
-fn get_slice_root_directory(app_path: & String) -> PathBuf {
+fn run_command<T>(mut command: T)
+    where T: Command {
+    command.run()
+}
+
+fn get_slice_root_directory(app_path: &String) -> PathBuf {
     let mut slice_root_directory = PathBuf::new();
     slice_root_directory.push(Path::new(&app_path).parent().unwrap());
     slice_root_directory.push(".sb");
