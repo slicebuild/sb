@@ -13,7 +13,7 @@ namespace sb.App.Commands
 
         void ICommand.Run()
         {
-            Args.SetOption(Args.Options.Format, Args.OptionValues.FormatDocker);
+            Args.SetOption(Args.Options.Format, Args.OptionDefaults.FormatDocker);
             var layer = MakeLayer();
             var path = MakePath(layer);
             Write(layer, path);

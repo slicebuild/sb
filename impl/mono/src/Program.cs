@@ -11,13 +11,12 @@ namespace sb
             try
             {
                 new Args(args).Command.Run();
-                Console.WriteLine("Done");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex); //todo:logs
-                Debugger.Break(); 
+                Console.WriteLine(ex); //todo:logs                
             }
+            Debugger.Break();
         }        
     }
 }

@@ -38,9 +38,10 @@ namespace sb.Slices
                 if (ext == ".md" || ext == ".txt")
                     continue;
 
+                var relPath = path.Replace(Root, "");
                 var svn = SemVerNameParser.Parse(fileName, SemVerName);
                 var lines = File.ReadAllLines(path);
-                var slice = new Slice(svn, lines);
+                var slice = new Slice(relPath, svn, lines);
 
                 if (slice.OsList.Contains(osName))
                     list.Add(slice);

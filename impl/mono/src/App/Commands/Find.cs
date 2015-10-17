@@ -30,7 +30,7 @@ namespace sb.App.Commands
             var layers = new LayerList(list).FindLayers(layerParams);
             foreach (var layer in layers)
             {
-                Console.WriteLine(layer.SemVerName);
+                Console.WriteLine(layer.RelPath);
             }
         }
     }

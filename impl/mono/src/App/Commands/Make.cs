@@ -5,6 +5,7 @@ using sb.Formatters;
 using sb.Formatters.Docker;
 using sb.Layers;
 using sb.Slices;
+using sb.Utils;
 
 namespace sb.App.Commands
 {
@@ -35,22 +36,33 @@ namespace sb.App.Commands
             dirList.ForEach(dir => list.AddRange(dir.FindByOs(osParam)));
 
             var layers = new LayerList(list);
-            var layer = layers.FindLayer(layerParams[0]); //todo: check layer found and has good dependencies
+            var layer = layers.FindLayer(layerParams[0]);
+
+            // if there were more layers requested, add them as dependencies
+            for (var i = 1; i < layerParams.Length; i++)
+            {
+                var additionalLayer = layers.FindLayer(layerParams[i]);
+                layer.Dependencies.Insert(i - 1, additionalLayer);
+            }
             return layer;
         }
 
+        /// <summary>
+        /// Returns the path where to write the output.
+        /// If option -o has been provided then this gets returned,
+        /// otherwise it's the env root plus the layer's semname
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <returns>path where to save the output</returns>
         public virtual string MakePath(Layer layer)
         {
-            var path = Path.Combine(Args.EnvDir, layer.SemVerName.ToString()); //todo:include slices semver
-            Directory.CreateDirectory(path);
-
-            var f = new FormatterFactory().GetFormatter(Args);
-            if (f.GetType() == typeof (FormatterDocker))
-            {
-                return Path.Combine(path, "Dockerfile");
-            }
-
-            return Path.Combine(path, layer.SemVerName.ToString());
+            var path = Args.GetOutPath();
+            if (path.IsEmpty())
+                path = Path.Combine(Args.EnvDir, layer.SemVerName.ToString());
+            var dir = Path.GetDirectoryName(path);
+            if (dir != null && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            return path;
         }
 
         public virtual void Write(Layer layer, string path)
@@ -64,7 +76,7 @@ namespace sb.App.Commands
             var lines = new List<string>();
             Write(layer, lines);
 
-            var slice = new Slice(layer.SemVerName, lines);
+            var slice = new Slice("", layer.SemVerName, lines);
 
             var sb = new StringBuilder();
             formatter.Write(slice, sb);
