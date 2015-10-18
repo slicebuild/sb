@@ -23,8 +23,8 @@ fn main() {
         let command: &str = &command;
         match command {
             "find" => {
-                let os = get_os_from_arguments_or_default(&mut arguments);
                 let layers = get_layers_from_arguments_or_default(&mut arguments);
+                let os = get_os_from_arguments_or_default(&mut arguments);
                 run_command(FindCommand {
                     layers: layers,
                     os: os,
@@ -35,8 +35,8 @@ fn main() {
                 run_command(FetchCommand { slice_root_directory: &slice_root_directory })
             }
             "make" => {
-                let os = get_os_from_arguments_or_default(&mut arguments);
                 let layers = get_layers_from_arguments_or_default(&mut arguments);
+                let os = get_os_from_arguments_or_default(&mut arguments);
                 run_command(MakeCommand {
                     layers: layers,
                     os: os,
