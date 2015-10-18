@@ -15,6 +15,7 @@ namespace sb.Layers
             _slice = slice;
         }
 
+        public string RelPath => _slice.RelPath;
         public SemVerName SemVerName => _slice.SemVerName;
         public IList<SliceSection> Sections => _slice.Sections;
         public LayerList Dependencies { get; } = new LayerList();

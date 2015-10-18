@@ -21,9 +21,8 @@ namespace sb.Layers
         }
 
         /// <summary>
-        /// Layers are sorted by name (asc), version (desc) and priority (desc).
-        /// FindLayer returns first matching layer with the same name and greatest version
-        /// If name and version match then priority is applied - the layer with higher priority is returned
+        /// Layers are sorted by name (asc), then by folder version (desc), then by file version (desc)
+        /// FindLayer returns first matching layer with the same name and greatest version(s)
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -37,7 +36,11 @@ namespace sb.Layers
             var layers = new LayerList();
             foreach (var name in names)
             {
-                layers.AddRange(this.Where(l => l.SemVerName.Name.ToLowerInvariant().Contains(name)));
+                foreach (var layer in this.Where(l => l.SemVerName.Name.ToLowerInvariant().Contains(name)))
+                {
+                    if (!layers.Contains(layer))
+                        layers.Add(layer);
+                }
             }
             return layers;
         }

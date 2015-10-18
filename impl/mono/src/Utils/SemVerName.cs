@@ -3,7 +3,7 @@ using System.Text;
 
 namespace sb.Utils
 {
-    public sealed class SemVerName
+    public sealed class SemVerName : IComparable<SemVerName>
     {
         public SemVerName(
             string label,
@@ -37,7 +37,7 @@ namespace sb.Utils
         public string Name { get; }
         public Tuple<int, int, int, int, int, int> NameVersion { get; }
         public Tuple<int, int, int, int, int, int> ParentVersion { get; }
-
+       
         public int Major => NameVersion.Item1;
         public string Value { get; }
 
@@ -50,6 +50,14 @@ namespace sb.Utils
         public override int GetHashCode()
         {
             return Value.GetHashCode();
+        }
+
+        public int CompareTo(SemVerName other)
+        {
+            var t1 = new Tuple<Tuple<int, int, int, int, int, int>, Tuple<int, int, int, int, int, int>>(NameVersion, ParentVersion);
+            var t2 = new Tuple<Tuple<int, int, int, int, int, int>, Tuple<int, int, int, int, int, int>>(other.NameVersion, other.ParentVersion);
+
+            return ((IComparable) t1).CompareTo(t2);
         }
 
         public override string ToString()

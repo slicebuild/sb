@@ -13,16 +13,16 @@ namespace sb.App
         public static class Options
         {
             public const string Format = "f"; // sh[ell] or d[ocker]
-            public const string OutDir = "o"; // output dir
+            public const string OutPath = "o"; // output file path
             public const string Url = "url";  // url for the slices zip file          
         }
 
-        public static class OptionValues
+        public static class OptionDefaults
         {
             public const string FormatDocker = "d";
             public const string FormatShell = "sh";
-            public const string OutDir = "o"; 
-            public const string Url = "url";         
+            public const string OutPath = ""; 
+            public const string Url = "";         
         }
 
         public string RootDir { get; }
@@ -154,6 +154,11 @@ namespace sb.App
                 _options.Add(name, value);
         }
 
+        public string GetOutPath()
+        {
+            return GetOption(Options.OutPath, OptionDefaults.OutPath);
+        }
+
         public string GetParam(int pos, string def)
         {
             return _params.Count > pos ? _params[pos] : def;
@@ -170,6 +175,6 @@ namespace sb.App
         {
             var osParam = GetParam(1, null);
             return osParam ?? "debian";
-        }
+        }        
     }
 }
