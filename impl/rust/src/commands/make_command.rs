@@ -27,18 +27,19 @@ impl<'a> MakeCommand<'a> {
                       options: options }
     }
 
-    fn add_code_for_slice_with_name(slice_name: &String,
+    fn add_code_for_slice_with_name(&self, slice_name: &String,
                                     current_code: &mut String,
                                     available_slices: &mut Vec<Slice>) {
         if let Some(slice_position) = available_slices.iter().position(|slice| slice.name == *slice_name) {
             let slice = available_slices.remove(slice_position);
-            MakeCommand::add_code_for_slice(&slice, current_code, available_slices);
+            self.add_code_for_slice(&slice, current_code, available_slices);
         }
     }
 
-    fn add_code_for_slice(slice: &Slice,
+    fn add_code_for_slice(&self, slice: &Slice,
                           current_code: &mut String,
                           available_slices: &mut Vec<Slice>) {
+        assert!(slice.get_os_list().contains(&self.os), "Slice \"{}\" does not support os \"{}\"", slice.name, self.os);
         if let Some(dep_section) = slice.sections.iter().find(|section| section.kind == Kind::Dep) {
             for dependency in &dep_section.items {
                 let dependency_position = available_slices.iter().position(|slice| {
@@ -46,7 +47,7 @@ impl<'a> MakeCommand<'a> {
                 });
                 if let Some(dependency_position) = dependency_position {
                     let dependency = available_slices.remove(dependency_position);
-                    MakeCommand::add_code_for_slice(&dependency, current_code, available_slices);
+                    self.add_code_for_slice(&dependency, current_code, available_slices);
                 }
             }
         }
@@ -62,7 +63,7 @@ impl<'a> MakeCommand<'a> {
             Ok(mut slices) => {
                 let mut string = String::new();
                 for layer in &self.layers {
-                    MakeCommand::add_code_for_slice_with_name(&layer, &mut string, &mut slices);
+                    self.add_code_for_slice_with_name(&layer, &mut string, &mut slices);
                 }
                 Ok(string)
             }

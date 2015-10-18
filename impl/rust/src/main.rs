@@ -15,7 +15,6 @@ fn main() {
 
     let root_directory = get_root_directory(&app_path);
     let slice_root_directory = get_slice_root_directory(&root_directory);
-
     if arguments.is_empty() {
         panic!("Command expected")
     } else {
