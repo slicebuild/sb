@@ -37,13 +37,10 @@ fn main() {
             "make" => {
                 let layers = get_layers_from_arguments_or_default(&mut arguments);
                 let os = get_os_from_arguments_or_default(&mut arguments);
-                run_command(MakeCommand {
-                    layers: layers,
-                    os: os,
-                    root_directory: &root_directory,
-                    slice_root_directory: &slice_root_directory,
-                    options: options
-                })
+                let command = MakeCommand::new(layers, os, &root_directory,
+                                                   &slice_root_directory,
+                                                   options);
+                run_command(command)
             }
             _ => panic!("Unknown command \"{}\"", command)
         }

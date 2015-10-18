@@ -10,14 +10,23 @@ use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 use super::super::slice::section::Kind;
 
 pub struct MakeCommand<'a> {
-    pub layers: Vec<String>,
-    pub os: String,
-    pub root_directory: &'a Path,
-    pub slice_root_directory: &'a Path,
-    pub options: Options
+    layers: Vec<String>,
+    os: String,
+    root_directory: &'a Path,
+    slice_root_directory: &'a Path,
+    options: Options
 }
 
 impl<'a> MakeCommand<'a> {
+    pub fn new(layers: Vec<String>, os: String, root_directory: &'a Path,
+           slice_root_directory: &'a Path, options: Options) -> MakeCommand<'a> {
+        assert!(!layers.is_empty(), "There is no specified layers");
+        assert!(!os.is_empty(), "There is no specified os");
+        MakeCommand { layers: layers, os: os, root_directory: root_directory,
+                      slice_root_directory: slice_root_directory,
+                      options: options }
+    }
+
     fn add_code_for_slice_with_name(slice_name: &String,
                                     current_code: &mut String,
                                     available_slices: &mut Vec<Slice>) {
