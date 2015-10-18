@@ -24,9 +24,9 @@ fn main() {
         match command {
             "find" => {
                 let os = get_os_from_arguments_or_default(&mut arguments);
-                let layer = get_layer_from_arguments_or_default(&mut arguments);
+                let layers = get_layers_from_arguments_or_default(&mut arguments);
                 run_command(FindCommand {
-                    layer: layer,
+                    layers: layers,
                     os: os,
                     slice_root_directory: &slice_root_directory,
                 })
@@ -60,6 +60,13 @@ fn pop_first_argument_or_take_default(arguments: &mut Vec<String>, default_value
 
 fn get_os_from_arguments_or_default(arguments: &mut Vec<String>) -> String {
     pop_first_argument_or_take_default(arguments, DEFAULT_OS.to_string())
+}
+
+fn get_layers_from_arguments_or_default(arguments: &mut Vec<String>) -> Vec<String> {
+    let argument = pop_first_argument_or_take_default(arguments, DEFAULT_LAYER.to_string());
+    argument.split(',')
+            .map(|layer| layer.to_string())
+            .collect()
 }
 
 fn get_layer_from_arguments_or_default(arguments: &mut Vec<String>) -> String {
