@@ -36,9 +36,9 @@ fn main() {
             }
             "make" => {
                 let os = get_os_from_arguments_or_default(&mut arguments);
-                let layer = get_layer_from_arguments_or_default(&mut arguments);
+                let layers = get_layers_from_arguments_or_default(&mut arguments);
                 run_command(MakeCommand {
-                    layer: layer,
+                    layers: layers,
                     os: os,
                     root_directory: &root_directory,
                     slice_root_directory: &slice_root_directory,
@@ -67,10 +67,6 @@ fn get_layers_from_arguments_or_default(arguments: &mut Vec<String>) -> Vec<Stri
     argument.split(',')
             .map(|layer| layer.to_string())
             .collect()
-}
-
-fn get_layer_from_arguments_or_default(arguments: &mut Vec<String>) -> String {
-    pop_first_argument_or_take_default(arguments, DEFAULT_LAYER.to_string())
 }
 
 fn run_command<T>(mut command: T)
