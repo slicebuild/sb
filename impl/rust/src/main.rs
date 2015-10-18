@@ -42,6 +42,7 @@ fn main() {
                     os: os,
                     root_directory: &root_directory,
                     slice_root_directory: &slice_root_directory,
+                    options: options
                 })
             }
             _ => panic!()

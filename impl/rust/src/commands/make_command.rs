@@ -1,9 +1,10 @@
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use super::command::Command;
 #[cfg(test)]
 use super::super::for_testing::get_slice_root_directory;
+use super::super::options_parse::Options;
 use super::super::slice::item::Slice;
 use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 use super::super::slice::section::Kind;
@@ -13,6 +14,7 @@ pub struct MakeCommand<'a> {
     pub os: String,
     pub root_directory: &'a Path,
     pub slice_root_directory: &'a Path,
+    pub options: Options
 }
 
 impl<'a> MakeCommand<'a> {
@@ -60,17 +62,28 @@ impl<'a> MakeCommand<'a> {
             Err(error) => Err(error),
         }
     }
+
+    fn get_output_file_path(&self) -> PathBuf {
+        if self.options.outpath.is_empty() {
+            let mut path = self.root_directory.to_path_buf();
+            path.push(&self.layer);
+            path
+        } else {
+            let mut path = PathBuf::new();
+            path.push(&self.options.outpath);
+            path
+        }
+    }
 }
 
 impl<'a> Command for MakeCommand<'a> {
     fn run(&mut self) {
         match self.get_code_for_latest_slice() {
             Ok(code) => {
-                let mut path = self.root_directory.to_path_buf();
-                path.push(&self.layer);
+                let path = self.get_output_file_path();
                 let path_as_string = path.to_str().unwrap().to_string();
                 if let Ok(mut file) = File::create(path) {
-                    file.write_fmt(format_args!("{}", &code));
+                    file.write_fmt(format_args!("{}", &code)).unwrap();
                 } else {
                     panic!("File cannot be created at path {}", &path_as_string);
                 }
