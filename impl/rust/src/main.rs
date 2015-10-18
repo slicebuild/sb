@@ -45,7 +45,7 @@ fn main() {
                     options: options
                 })
             }
-            _ => panic!()
+            _ => panic!("Unknown command \"{}\"", command)
         }
     }
 }
