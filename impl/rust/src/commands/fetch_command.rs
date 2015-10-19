@@ -101,7 +101,7 @@ impl<'a> Command for FetchCommand<'a> {
         let bytes = FetchCommand::download_latest_version();
         let cursor = Cursor::new(bytes);
         let zip_archive = ZipArchive::new(cursor).unwrap();
-        FetchCommand::extract_archive_into_directory(zip_archive,
-                                                     self.slice_root_directory.to_path_buf());
+        let directory = self.slice_root_directory.to_path_buf();
+        FetchCommand::extract_archive_into_directory(zip_archive, directory);
     }
 }
