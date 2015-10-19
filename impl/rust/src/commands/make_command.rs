@@ -8,15 +8,15 @@ use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 use super::super::slice::section::Kind;
 
 pub struct MakeCommand<'a> {
-    layers: Vec<String>,
-    os: String,
+    layers: &'a Vec<&'a str>,
+    os: &'a str,
     root_directory: &'a Path,
     slice_root_directory: &'a Path,
     options: Options
 }
 
 impl<'a> MakeCommand<'a> {
-    pub fn new(layers: Vec<String>, os: String, root_directory: &'a Path,
+    pub fn new(layers: &'a Vec<&'a str>, os: &'a str, root_directory: &'a Path,
            slice_root_directory: &'a Path, options: Options) -> MakeCommand<'a> {
         assert!(!layers.is_empty(), "There is no specified layers");
         assert!(!os.is_empty(), "There is no specified os");
@@ -25,7 +25,7 @@ impl<'a> MakeCommand<'a> {
                       options: options }
     }
 
-    fn add_code_for_slice_with_name(&self, slice_name: &String,
+    fn add_code_for_slice_with_name(&self, slice_name: &str,
                                     current_code: &mut String,
                                     available_slices: &mut Vec<Slice>) {
         if let Some(slice_position) = available_slices.iter().position(|slice| slice.name == *slice_name) {
@@ -60,8 +60,8 @@ impl<'a> MakeCommand<'a> {
         match get_latest_slices_from_slice_root_directory(&self.slice_root_directory) {
             Ok(mut slices) => {
                 let mut string = String::new();
-                for layer in &self.layers {
-                    self.add_code_for_slice_with_name(&layer, &mut string, &mut slices);
+                for layer in self.layers {
+                    self.add_code_for_slice_with_name(layer, &mut string, &mut slices);
                 }
                 Ok(string)
             }

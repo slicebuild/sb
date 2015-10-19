@@ -4,13 +4,13 @@ use super::command::Command;
 use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 
 pub struct FindCommand<'a> {
-    layers: Vec<String>,
-    os: String,
+    layers: &'a Vec<&'a str>,
+    os: &'a str,
     slice_root_directory: &'a Path,
 }
 
 impl<'a> FindCommand<'a> {
-    pub fn new(layers: Vec<String>, os: String, slice_root_directory: &'a Path)
+    pub fn new(layers: &'a Vec<&'a str>, os: &'a str, slice_root_directory: &'a Path)
         -> FindCommand<'a> {
         assert!(!layers.is_empty());
         assert!(!os.is_empty());

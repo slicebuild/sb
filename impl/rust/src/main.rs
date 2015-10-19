@@ -4,6 +4,7 @@ use sb::commands::command::Command;
 use sb::commands::fetch_command::FetchCommand;
 use sb::commands::find_command::FindCommand;
 use sb::commands::make_command::MakeCommand;
+use std::ops::Deref;
 use std::env::current_dir;
 use std::path::PathBuf;
 
@@ -53,19 +54,21 @@ fn run_fetch_command(app_path: String) {
 
 fn run_find_command(app_path: String, mut arguments: Vec<String>) {
     let layers = get_layers_from_arguments_or_default(&mut arguments);
+    let layers: Vec<&str> = layers.iter().map(|layer| layer.deref()).collect();
     let os = get_os_from_arguments_or_default(&mut arguments);
     let root_directory = get_root_directory(&app_path);
     let slice_root_directory = get_slice_root_directory(&root_directory);
-    let mut command = FindCommand::new(layers, os, &slice_root_directory);
+    let mut command = FindCommand::new(&layers, &os, &slice_root_directory);
     command.run();
 }
 
 fn run_make_command(app_path: String, mut arguments: Vec<String>, options: Options) {
     let layers = get_layers_from_arguments_or_default(&mut arguments);
+    let layers: Vec<&str> = layers.iter().map(|layer| layer.deref()).collect();
     let os = get_os_from_arguments_or_default(&mut arguments);
     let root_directory = get_root_directory(&app_path);
     let slice_root_directory = get_slice_root_directory(&root_directory);
-    let mut command = MakeCommand::new(layers, os, &root_directory,
+    let mut command = MakeCommand::new(&layers, &os, &root_directory,
                                        &slice_root_directory, options);
     command.run();
 }

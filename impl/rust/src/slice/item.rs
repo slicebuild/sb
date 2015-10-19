@@ -9,15 +9,15 @@ pub struct Slice {
 }
 
 impl Slice {
-    pub fn get_os_list(&self) -> &Vec<String> {
-        let mut os_list: Option<&Vec<String>> = None;
-        for section in &self.sections {
-            if section.kind == Kind::Os {
-                os_list = Some(&section.items);
-                break;
-            }
+    pub fn get_os_list(&self) -> Vec<&str> {
+        let os_section = self.sections.iter()
+                                      .find(|section| section.kind == Kind::Os)
+                                      .unwrap();
+        let mut os_list = Vec::<&str>::new();
+        for os in &os_section.items {
+            os_list.push(os);
         }
-        os_list.unwrap()
+        os_list
     }
 }
 
@@ -44,6 +44,6 @@ fn slice_get_os_list_works() {
     };
     let os_list = slice.get_os_list();
     assert_eq!(os_list.len(), 1);
-    let os = os_list.first().unwrap();
+    let os = *os_list.first().unwrap();
     assert_eq!(os, "debian-8.2");
 }
