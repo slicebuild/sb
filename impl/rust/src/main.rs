@@ -31,7 +31,7 @@ fn main() {
                 })
             }
             "fetch" => {
-                run_command(FetchCommand { slice_root_directory: &slice_root_directory })
+                run_command(FetchCommand::new(&slice_root_directory))
             }
             "make" => {
                 let layers = get_layers_from_arguments_or_default(&mut arguments);

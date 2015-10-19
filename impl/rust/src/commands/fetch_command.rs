@@ -9,10 +9,20 @@ use zip::read::ZipArchive;
 use super::command::Command;
 
 pub struct FetchCommand<'a> {
-    pub slice_root_directory: &'a Path,
+    slice_root_directory: &'a Path,
 }
 
 impl<'a> FetchCommand<'a> {
+    /// # Examples
+    /// ```
+    /// use sb::commands::fetch_command::FetchCommand;
+    /// use std::path::Path;
+    /// let command = FetchCommand::new(Path::new("/tmp"));
+    /// ```
+    pub fn new(slice_root_directory: &'a Path) -> FetchCommand {
+        FetchCommand { slice_root_directory: slice_root_directory }
+    }
+
     fn choose_latest_version(array: &Vec<Json>) -> Version {
         let mut latest_version: Option<Version> = None;
         assert!(!array.is_empty());
