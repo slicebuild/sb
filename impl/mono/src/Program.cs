@@ -17,6 +17,8 @@ namespace sb
                 Console.WriteLine(ex); //todo:logs                
             }
             Debugger.Break();
-        }        
+        }    
+        
+        //todo: dock (tti, cur dir, cur user)    
     }
 }

@@ -2,55 +2,38 @@
 using System.IO;
 using System.Text;
 using sb.Formatters;
-using sb.Formatters.Docker;
 using sb.Layers;
 using sb.Slices;
 using sb.Utils;
 
 namespace sb.App.Commands
 {
-    public class Make : ICommand
+    public class Make : Find, ICommand
     {
-        public Make(Args args)
+        public Make(Args args) 
+            : base(args)
         {
-            Args = args;
         }
-
-        public Args Args { get; }
 
         void ICommand.Run()
         {
-            var layer = MakeLayer();
-            var path = MakePath(layer);
-            Write(layer, path);
-        }
-
-        public virtual Layer MakeLayer()
-        {
-            var layerParams = Args.GetLayerParams();
-            var osParam = Args.GetOsParam();
-
-            var list = new List<Slice>();
-
-            var dirList = new SliceDirectoryList(Args.SlicesDir);
-            dirList.ForEach(dir => list.AddRange(dir.FindByOs(osParam)));
-
-            var layers = new LayerList(list);
-            var layer = layers.FindLayer(layerParams[0]);
-
-            // if there were more layers requested, add them as dependencies
-            for (var i = 1; i < layerParams.Length; i++)
+            var missingNamesList = new List<string>();
+            var layers = FindLayers(missingNamesList);
+            var path = MakePath(layers[0]);
+            if (missingNamesList.Count != 0)
             {
-                var additionalLayer = layers.FindLayer(layerParams[i]);
-                layer.Dependencies.Insert(i - 1, additionalLayer);
+                ReportMissingRequested(layers, missingNamesList);
+                return;                
             }
-            return layer;
-        }
+
+            Write(layers[0], path);
+        }        
 
         /// <summary>
         /// Returns the path where to write the output.
         /// If option -o has been provided then this gets returned,
-        /// otherwise it's the env root plus the layer's semname
+        /// otherwise it's the env root plus the layer's semname.
+        /// If there is a file already at the path - it get's deleted.
         /// </summary>
         /// <param name="layer"></param>
         /// <returns>path where to save the output</returns>
@@ -59,12 +42,22 @@ namespace sb.App.Commands
             var path = Args.GetOutPath();
             if (path.IsEmpty())
                 path = Path.Combine(Args.EnvDir, layer.SemVerName.ToString());
+
             var dir = Path.GetDirectoryName(path);
             if (dir != null && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
+
+            if (File.Exists(path))
+                File.Delete(path);
+
             return path;
         }
 
+        /// <summary>
+        /// Writes the layer to disk using a formatter to prepare the output.
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="path"></param>
         public virtual void Write(Layer layer, string path)
         {
             var formatter = new FormatterFactory().GetFormatter(Args);

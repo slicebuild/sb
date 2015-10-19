@@ -14,9 +14,18 @@ namespace sb.App.Commands
         void ICommand.Run()
         {
             Args.SetOption(Args.Options.Format, Args.OptionDefaults.FormatDocker);
-            var layer = MakeLayer();
-            var path = MakePath(layer);
-            Write(layer, path);
+
+            var missingNamesList = new List<string>();
+            var layers = FindLayers(missingNamesList);
+            var path = MakePath(layers[0]);
+
+            if (missingNamesList.Count != 0)
+            {
+                ReportMissingRequested(layers, missingNamesList);
+                return;
+            }
+
+            Write(layers[0], path);
 
             var stdout = new List<string>();
             Fs.RunProcess("docker", $"build -t wb-test {Path.GetDirectoryName(path)}", stdout);
@@ -26,7 +35,7 @@ namespace sb.App.Commands
                 var items = stdout[stdout.Count - 1].Split(" ");
                 if (items.Length >= 3 && items[0].StartsWith("Success"))
                 {
-                    var id = items[2];
+                    //var id = items[2];
                     //todo: use the generated image id
                 }
             }
