@@ -1,4 +1,5 @@
 use super::section::{Kind, Section};
+use std::ops::Deref;
 use semver::Version;
 
 #[derive(Debug)]
@@ -13,11 +14,7 @@ impl Slice {
         let os_section = self.sections.iter()
                                       .find(|section| section.kind == Kind::Os)
                                       .unwrap();
-        let mut os_list = Vec::<&str>::new();
-        for os in &os_section.items {
-            os_list.push(os);
-        }
-        os_list
+        os_section.items.iter().map(|item| item.deref()).collect::<Vec<&str>>()
     }
 }
 
