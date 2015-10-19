@@ -1,8 +1,7 @@
-﻿using System.IO;
-using sb.Test.Utils;
-using sb_bbt.Utils;
+﻿using sb.Core.Utils;
+using sb.TestBB.Utils;
 
-namespace sb_bbt.Tests.Make
+namespace sb.TestBB.Tests.Make
 {
     public class TestMake : Test
     {
@@ -14,9 +13,9 @@ namespace sb_bbt.Tests.Make
         public override void Run()
         {
             WriteStart();
-            Fs.DeleteFolderExcept(App.EnvDir, App.SlicesDir);
+            FsUtils.DeleteFolderExcept(App.EnvDir, App.SlicesDir);
             Fs.RunProcess("sb", "make", Output);
-            if (Fs.FolderExists(App.EnvDir, "jekyll"))
+            if (FsUtils.FileExists(App.EnvDir, "jekyll"))
             {
                 WriteFinish(true);
                 return;

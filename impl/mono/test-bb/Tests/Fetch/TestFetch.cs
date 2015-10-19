@@ -1,8 +1,8 @@
 ﻿using System.IO;
-using sb.Test.Utils;
-using sb_bbt.Utils;
+using sb.Core.Utils;
+using sb.TestBB.Utils;
 
-namespace sb_bbt.Tests.Fetch
+namespace sb.TestBB.Tests.Fetch
 {
     public class TestFetch : Test
     {
@@ -14,7 +14,7 @@ namespace sb_bbt.Tests.Fetch
         public override void Run()
         {
             WriteStart();
-            Fs.DeleteFolder(App.EnvDir);
+            FsUtils.DeleteFolder(App.EnvDir);
             Fs.RunProcess("sb", "fetch", Output);
             if (Directory.Exists(App.SlicesDir))
             {

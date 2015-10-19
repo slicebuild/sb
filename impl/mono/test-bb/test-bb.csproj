@@ -46,11 +46,17 @@
     <Compile Include="Tests\Find\TestFind.cs" />
     <Compile Include="Tests\Make\TestMake.cs" />
     <Compile Include="Tests\Test.cs" />
-    <Compile Include="Utils\Fs.cs" />
-    <Compile Include="Utils\Text.cs" />
+    <Compile Include="Utils\FsUtils.cs" />
+    <Compile Include="Utils\TextUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\core\core.csproj">
+      <Project>{311abf4c-a509-4190-8f28-1438d7378df3}</Project>
+      <Name>core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

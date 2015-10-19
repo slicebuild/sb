@@ -1,5 +1,4 @@
-﻿using sb.Core.Misc;
-using Xunit;
+﻿using Xunit;
 
 namespace sb.Core.Tests
 {
@@ -8,13 +7,13 @@ namespace sb.Core.Tests
         [Fact]
         public void PassingTest()
         {
-            Assert.Equal(4, new Class1().Test(3));
+            //Assert.Equal(4, new Class1().Test(3));
         }
 
         [Fact]
         public void FailingTest()
         {
-            Assert.Equal(3, new Class1().Test(3));
+            //Assert.Equal(3, new Class1().Test(3));
         }
     }
 }

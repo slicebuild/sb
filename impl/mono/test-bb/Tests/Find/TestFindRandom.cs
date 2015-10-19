@@ -1,8 +1,7 @@
-﻿using System.IO;
-using sb.Test.Utils;
-using sb_bbt.Utils;
+﻿using sb.Core.Utils;
+using sb.TestBB.Utils;
 
-namespace sb_bbt.Tests.Find
+namespace sb.TestBB.Tests.Find
 {
     public class TestFindRandom : Test
     {
@@ -16,7 +15,7 @@ namespace sb_bbt.Tests.Find
             WriteStart();
             //todo: pick up a latest slice and use it as the param to find
             Fs.RunProcess("sb", "find ruby", Output);
-            if (Text.ListContains(Output, "ruby"))
+            if (TextUtils.ListContains(Output, "ruby"))
             {
                 WriteFinish(true);
                 return;

@@ -62,7 +62,6 @@
     <Compile Include="Layers\LayerComparer.cs" />
     <Compile Include="Layers\LayerList.cs" />
     <Compile Include="Layers\MissingLayer.cs" />
-    <Compile Include="Misc\Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Slices\EmptySlice.cs" />
     <Compile Include="Slices\Slice.cs" />

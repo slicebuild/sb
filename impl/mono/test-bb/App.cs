@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using sb_bbt.Tests.Fetch;
-using sb_bbt.Tests.Find;
-using sb_bbt.Tests.Make;
+using sb.TestBB.Tests.Fetch;
+using sb.TestBB.Tests.Find;
+using sb.TestBB.Tests.Make;
 
-namespace sb_bbt
+namespace sb.TestBB
 {
     public class App
     {

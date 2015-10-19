@@ -1,9 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace sb_bbt.Utils
+namespace sb.TestBB.Utils
 {
-    public static class Text
+    public static class TextUtils
     {
         public static bool ListContains(IList<string> list, string text)
         {

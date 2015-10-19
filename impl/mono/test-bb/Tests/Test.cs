@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
-namespace sb_bbt.Tests
+namespace sb.TestBB.Tests
 {
     public class Test
     {

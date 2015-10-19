@@ -1,8 +1,7 @@
-﻿using System.IO;
-using sb.Test.Utils;
-using sb_bbt.Utils;
+﻿using sb.Core.Utils;
+using sb.TestBB.Utils;
 
-namespace sb_bbt.Tests.Find
+namespace sb.TestBB.Tests.Find
 {
     public class TestFind : Test
     {
@@ -15,7 +14,7 @@ namespace sb_bbt.Tests.Find
         {
             WriteStart();
             Fs.RunProcess("sb", "find", Output);
-            if (Text.ListContains(Output, "jekyll"))
+            if (TextUtils.ListContains(Output, "jekyll"))
             {
                 WriteFinish(true);
                 return;

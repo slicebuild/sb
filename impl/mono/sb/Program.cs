@@ -16,7 +16,6 @@ namespace sb
             {
                 Console.WriteLine(ex); //todo:logs                
             }
-            Debugger.Break();
         }    
         
 
