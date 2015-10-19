@@ -2,8 +2,6 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use super::command::Command;
-#[cfg(test)]
-use super::super::for_testing::get_slice_root_directory;
 use super::super::options_parse::Options;
 use super::super::slice::item::Slice;
 use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
@@ -99,41 +97,4 @@ impl<'a> Command for MakeCommand<'a> {
             Err(error) => panic!("{}", error)
         }
     }
-}
-
-#[test]
-fn test_make_command() {
-    let expected_code = "apt-get update -y
-apt-get install libc6-dev libssl-dev make \
-                         build-essential libssl-dev libreadline6-dev zlib1g-dev libyaml-dev \
-                         libz-dev -y
-apt-get upgrade -y
-apt-get install wget -y
-cd /tmp
-wget \
-                         https://cache.ruby-lang.org/pub/ruby/2.2/ruby-2.2.3.tar.gz
-tar xvzf \
-                         ruby-2.2.3.tar.gz
-cd ruby-2.2.3
-./configure --prefix=/usr/local
-make
-\
-                         make install
-cd ..
-wget https://rubygems.org/rubygems/rubygems-2.4.8.tgz
-\
-                         tar xvzf rubygems-2.4.8.tgz
-cd rubygems-2.4.8
-ruby setup.rb
-gem install \
-                         jekyll -v '3.0.0.pre.beta9'
-";
-    let slice_root_directory = get_slice_root_directory();
-    let command = MakeCommand {
-        layer: "jekyll".to_string(),
-        os: "debian".to_string(),
-        slice_root_directory: &slice_root_directory,
-    };
-    let returned_code = command.get_code_for_latest_slice().unwrap();
-    assert_eq!(returned_code, expected_code);
 }
