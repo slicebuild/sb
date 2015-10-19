@@ -1,48 +1,70 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using sb.Slices;
 
 namespace sb.Layers
 {
+    /// <summary>
+    /// List of all Layers created out of the slices in the slices directory.
+    /// </summary>
     public class LayerList : List<Layer>
     {
-        public LayerList()
+        /// <summary>
+        /// All slices from the slices directory and subdirectories stored in a flat list
+        /// become layers in a flat sorted list where they can be easily found
+        /// by name or by name + version. Also, each layer looks up it's dependencies.
+        /// </summary>
+        /// <param name="slices"></param>
+        /// <param name="osName"></param>
+        public LayerList(IList<Slice> slices, string osName)
         {
-        }
-
-        public LayerList(IList<Slice> slices)
-        {
+            OsName = osName;
             foreach (var slice in slices)
             {
-                Add(new Layer(slice));
+                Add(new Layer(this, slice));
             }
             Sort(new LayerComparer());
             ForEach(l => l.FindDependenciesRecursive(this));
         }
 
+        public string OsName { get; }
+        public IList<string> MissingNames { get; } = new List<string>();
+
         /// <summary>
         /// Layers are sorted by name (asc), then by folder version (desc), then by file version (desc)
-        /// FindLayer returns first matching layer with the same name and greatest version(s)
+        /// FindLayers returns first matching layer with the same name and greatest version or NULL.
+        /// If the layer hasn't been found it's name is added to the MissingNames list.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
         public Layer FindLayer(string name)
         {
-            return Find(l => l.SemVerName.Name == name);
+            var layer = Find(item => item.SemVerName.Name == name);
+            if (layer == null)
+            {
+                AddMissingName(name);
+                layer = new MissingLayer(this, name);
+            }
+            return layer;
         }
 
-        public LayerList FindLayers(string[] names)
+        public IList<Layer> FindLayers(string[] names)
         {
-            var layers = new LayerList();
+            var layers = new List<Layer>();
             foreach (var name in names)
             {
-                foreach (var layer in this.Where(l => l.SemVerName.Name.ToLowerInvariant().Contains(name)))
+                var layer = FindLayer(name);
+                if (!layers.Contains(layer))
                 {
-                    if (!layers.Contains(layer))
-                        layers.Add(layer);
+                    layers.Add(layer);
                 }
             }
             return layers;
+        }
+
+        private void AddMissingName(string name)
+        {
+            if (!MissingNames.Contains(name))
+                MissingNames.Add(name);
         }
     }
 }

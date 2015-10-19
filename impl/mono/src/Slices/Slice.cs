@@ -46,5 +46,10 @@ namespace sb.Slices
         {
             return SemVerName.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return SemVerName.ToString();
+        }
     }
 }
