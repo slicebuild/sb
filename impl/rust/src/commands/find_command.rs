@@ -6,7 +6,7 @@ use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 use super::super::for_testing::get_slice_root_directory;
 
 pub struct FindCommand<'a> {
-    pub layer: String,
+    pub layers: Vec<String>,
     pub os: String,
     pub slice_root_directory: &'a Path,
 }
@@ -18,10 +18,14 @@ impl<'a> Command for FindCommand<'a> {
             Ok(slices) => {
                 let slices = slices.into_iter().filter(|slice| {
                     let os_list = slice.get_os_list();
-                    os_list.contains(&self.os) && slice.name.contains(&self.layer)
+                    os_list.contains(&self.os) && self.layers.iter().any(|layer| slice.name.contains(layer))
                 });
                 for slice in slices {
-                    println!("{}", slice.name);
+                    if let Some(ref version) = slice.version {
+                        println!("{}-{}", slice.name, version);
+                    } else {
+                        println!("{}", slice.name);
+                    }
                 }
             }
             Err(error) => println!("{}", error),
@@ -33,7 +37,7 @@ impl<'a> Command for FindCommand<'a> {
 fn test_find_command_run() {
     let slice_root_directory = get_slice_root_directory();
     let mut command = FindCommand {
-        layer: "jekyll".to_string(),
+        layers: vec!["jekyll".to_string()],
         os: "debian".to_string(),
         slice_root_directory: &slice_root_directory,
     };

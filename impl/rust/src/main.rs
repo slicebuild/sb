@@ -15,7 +15,6 @@ fn main() {
 
     let root_directory = get_root_directory(&app_path);
     let slice_root_directory = get_slice_root_directory(&root_directory);
-
     if arguments.is_empty() {
         panic!("Command expected")
     } else {
@@ -23,10 +22,10 @@ fn main() {
         let command: &str = &command;
         match command {
             "find" => {
+                let layers = get_layers_from_arguments_or_default(&mut arguments);
                 let os = get_os_from_arguments_or_default(&mut arguments);
-                let layer = get_layer_from_arguments_or_default(&mut arguments);
                 run_command(FindCommand {
-                    layer: layer,
+                    layers: layers,
                     os: os,
                     slice_root_directory: &slice_root_directory,
                 })
@@ -35,16 +34,14 @@ fn main() {
                 run_command(FetchCommand { slice_root_directory: &slice_root_directory })
             }
             "make" => {
+                let layers = get_layers_from_arguments_or_default(&mut arguments);
                 let os = get_os_from_arguments_or_default(&mut arguments);
-                let layer = get_layer_from_arguments_or_default(&mut arguments);
-                run_command(MakeCommand {
-                    layer: layer,
-                    os: os,
-                    root_directory: &root_directory,
-                    slice_root_directory: &slice_root_directory,
-                })
+                let command = MakeCommand::new(layers, os, &root_directory,
+                                                   &slice_root_directory,
+                                                   options);
+                run_command(command)
             }
-            _ => panic!()
+            _ => panic!("Unknown command \"{}\"", command)
         }
     }
 }
@@ -61,8 +58,11 @@ fn get_os_from_arguments_or_default(arguments: &mut Vec<String>) -> String {
     pop_first_argument_or_take_default(arguments, DEFAULT_OS.to_string())
 }
 
-fn get_layer_from_arguments_or_default(arguments: &mut Vec<String>) -> String {
-    pop_first_argument_or_take_default(arguments, DEFAULT_LAYER.to_string())
+fn get_layers_from_arguments_or_default(arguments: &mut Vec<String>) -> Vec<String> {
+    let argument = pop_first_argument_or_take_default(arguments, DEFAULT_LAYER.to_string());
+    argument.split(',')
+            .map(|layer| layer.to_string())
+            .collect()
 }
 
 fn run_command<T>(mut command: T)

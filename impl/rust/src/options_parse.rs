@@ -3,9 +3,9 @@ use std::env;
 
 #[derive(Debug)]
 pub struct Options {
-    format: String,
-    outdir: String,
-    url: String,
+    pub format: String,
+    pub outpath: String,
+    pub url: String,
 }
 
 impl Options {
@@ -13,7 +13,7 @@ impl Options {
         "f"
     }
 
-    fn get_outdir_option_name() -> &'static str {
+    fn get_outpath_option_name() -> &'static str {
         "o"
     }
 
@@ -23,22 +23,22 @@ impl Options {
 
     fn has_option_with_name(option_name: &String) -> bool {
         let format_option_name = Options::get_format_option_name();
-        let outdir_option_name = Options::get_outdir_option_name();
+        let outpath_option_name = Options::get_outpath_option_name();
         let url_option_name = Options::get_url_option_name();
 
-        option_name == format_option_name || option_name == outdir_option_name ||
+        option_name == format_option_name || option_name == outpath_option_name ||
         option_name == url_option_name
     }
 
     fn set_option(&mut self, option_name: String, option_value: String) {
         let format_option_name = Options::get_format_option_name();
-        let outdir_option_name = Options::get_outdir_option_name();
+        let outpath_option_name = Options::get_outpath_option_name();
         let url_option_name = Options::get_url_option_name();
 
         if option_name == format_option_name {
             self.format = option_value
-        } else if option_name == outdir_option_name {
-            self.outdir = option_value
+        } else if option_name == outpath_option_name {
+            self.outpath = option_value
         } else if option_name == url_option_name {
             self.url = option_value
         } else {
@@ -50,7 +50,7 @@ impl Options {
 pub fn parse_options() -> (String, Options, Vec<String>) {
     let options = Options {
         format: String::new(),
-        outdir: String::new(),
+        outpath: String::new(),
         url: String::new(),
     };
     let options = RefCell::new(options);
@@ -62,8 +62,6 @@ pub fn parse_options() -> (String, Options, Vec<String>) {
     let mut remaining_arguments: Vec<String> = Vec::new();
     for argument in args {
         if let Some(option_name) = current_option_name {
-            println!("Current option = {}", option_name);
-            println!("Option value = {}", argument);
             let mut options = options.borrow_mut();
             options.set_option(option_name.to_string(), argument);
             current_option_name = Option::None
@@ -72,10 +70,7 @@ pub fn parse_options() -> (String, Options, Vec<String>) {
             if argument_without_dashes.contains('=') {
                 let parts: Vec<&str> = argument_without_dashes.splitn(2, '=').collect();
                 let option_name = parts.first().unwrap();
-                println!("Option name = {}", option_name);
-                println!("Option contains value after '='");
                 let option_value = parts.last().unwrap();
-                println!("Option value = {}", option_value);
                 let mut options = options.borrow_mut();
                 options.set_option(option_name.to_string(), option_value.to_string());
             } else {

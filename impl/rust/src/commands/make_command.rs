@@ -1,32 +1,45 @@
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use super::command::Command;
 #[cfg(test)]
 use super::super::for_testing::get_slice_root_directory;
+use super::super::options_parse::Options;
 use super::super::slice::item::Slice;
 use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 use super::super::slice::section::Kind;
 
 pub struct MakeCommand<'a> {
-    pub layer: String,
-    pub os: String,
-    pub root_directory: &'a Path,
-    pub slice_root_directory: &'a Path,
+    layers: Vec<String>,
+    os: String,
+    root_directory: &'a Path,
+    slice_root_directory: &'a Path,
+    options: Options
 }
 
 impl<'a> MakeCommand<'a> {
-    fn find_main_slice(&self, slices: &'a Vec<Slice>) -> &'a Slice {
-        slices.iter()
-              .find(|slice| {
-                  slice.name.contains(&self.layer) && slice.get_os_list().contains(&self.os)
-              })
-              .unwrap()
+    pub fn new(layers: Vec<String>, os: String, root_directory: &'a Path,
+           slice_root_directory: &'a Path, options: Options) -> MakeCommand<'a> {
+        assert!(!layers.is_empty(), "There is no specified layers");
+        assert!(!os.is_empty(), "There is no specified os");
+        MakeCommand { layers: layers, os: os, root_directory: root_directory,
+                      slice_root_directory: slice_root_directory,
+                      options: options }
     }
 
-    fn add_code_for_slice(current_code: &mut String,
-                          slice: &Slice,
-                          available_slices: &mut Vec<&Slice>) {
+    fn add_code_for_slice_with_name(&self, slice_name: &String,
+                                    current_code: &mut String,
+                                    available_slices: &mut Vec<Slice>) {
+        if let Some(slice_position) = available_slices.iter().position(|slice| slice.name == *slice_name) {
+            let slice = available_slices.remove(slice_position);
+            self.add_code_for_slice(&slice, current_code, available_slices);
+        }
+    }
+
+    fn add_code_for_slice(&self, slice: &Slice,
+                          current_code: &mut String,
+                          available_slices: &mut Vec<Slice>) {
+        assert!(slice.get_os_list().contains(&self.os), "Slice \"{}\" does not support os \"{}\"", slice.name, self.os);
         if let Some(dep_section) = slice.sections.iter().find(|section| section.kind == Kind::Dep) {
             for dependency in &dep_section.items {
                 let dependency_position = available_slices.iter().position(|slice| {
@@ -34,7 +47,7 @@ impl<'a> MakeCommand<'a> {
                 });
                 if let Some(dependency_position) = dependency_position {
                     let dependency = available_slices.remove(dependency_position);
-                    MakeCommand::add_code_for_slice(current_code, &dependency, available_slices);
+                    self.add_code_for_slice(&dependency, current_code, available_slices);
                 }
             }
         }
@@ -47,17 +60,26 @@ impl<'a> MakeCommand<'a> {
 
     fn get_code_for_latest_slice(&self) -> Result<String, String> {
         match get_latest_slices_from_slice_root_directory(&self.slice_root_directory) {
-            Ok(slices) => {
-                let mut available_slices: Vec<&Slice> = Vec::new();
-                for slice in &slices {
-                    available_slices.push(&slice);
-                }
-                let main_layer = self.find_main_slice(&slices);
+            Ok(mut slices) => {
                 let mut string = String::new();
-                MakeCommand::add_code_for_slice(&mut string, &main_layer, &mut available_slices);
+                for layer in &self.layers {
+                    self.add_code_for_slice_with_name(&layer, &mut string, &mut slices);
+                }
                 Ok(string)
             }
-            Err(error) => Err(error),
+            Err(error) => Err(error)
+        }
+    }
+
+    fn get_output_file_path(&self) -> PathBuf {
+        if self.options.outpath.is_empty() {
+            let mut path = self.root_directory.to_path_buf();
+            path.push(&self.layers.first().unwrap());
+            path
+        } else {
+            let mut path = PathBuf::new();
+            path.push(&self.options.outpath);
+            path
         }
     }
 }
@@ -66,11 +88,10 @@ impl<'a> Command for MakeCommand<'a> {
     fn run(&mut self) {
         match self.get_code_for_latest_slice() {
             Ok(code) => {
-                let mut path = self.root_directory.to_path_buf();
-                path.push(&self.layer);
+                let path = self.get_output_file_path();
                 let path_as_string = path.to_str().unwrap().to_string();
                 if let Ok(mut file) = File::create(path) {
-                    file.write_fmt(format_args!("{}", &code));
+                    file.write_fmt(format_args!("{}", &code)).unwrap();
                 } else {
                     panic!("File cannot be created at path {}", &path_as_string);
                 }

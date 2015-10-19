@@ -1,7 +1,8 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::error::Error;
 use std::fs::{DirEntry, File, metadata, read_dir};
-use std::io::Read;
+use std::io::{ErrorKind, Read};
 use std::path::Path;
 use semver::Version;
 #[cfg(test)]
@@ -12,50 +13,21 @@ use super::item::Slice;
 use super::super::for_testing::get_slice_root_directory;
 
 pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<String>, String> {
-    let directories: Vec<DirEntry> = read_dir(&slices_directory)
-                                         .unwrap()
-                                         .filter(|entry| {
-                                             match *entry {
-                                                 Ok(ref entry) => {
-                                                     let entry_path = entry.path();
-                                                     let metadata = metadata(entry_path).unwrap();
-                                                     metadata.is_dir()
-                                                 }
-                                                 Err(_) => false,
-                                             }
-                                         })
-                                         .map(|entry| entry.unwrap())
-                                         .collect();
-    if directories.is_empty() {
-        Err("There are no any slices".to_string())
-    } else {
-        let mut slice_directories: HashMap<u64, Vec<SliceDirectory>> = HashMap::new();
-        for directory in directories {
-            let directory = directory.path();
-            let directory_name = directory.file_name().unwrap().to_str().unwrap().to_string();
-            let (_, slice_version) = get_slice_name_and_version_from_string(&directory_name);
-            let slice_version = slice_version.unwrap();
-            let major = slice_version.major;
-            let slice_directory = SliceDirectory {
-                name: directory_name,
-                version: slice_version,
-            };
-            if slice_directories.contains_key(&major) {
-                let mut slice_directories_for_version = slice_directories.get_mut(&major).unwrap();
-                slice_directories_for_version.push(slice_directory);
-            } else {
-                let mut slice_directories_for_version = Vec::new();
-                slice_directories_for_version.push(slice_directory);
-                slice_directories.insert(major, slice_directories_for_version);
+    match get_directories_in_directory(&slices_directory) {
+        Ok(directories) => {
+            if directories.is_empty() {
+                return Err("There are no any slices".to_string())
             }
+            let slice_directories = group_directories_by_semver_major(directories);
+            assert!(!slice_directories.is_empty());
+            let (_, mut slice_directories) = slice_directories.into_iter().max().unwrap();
+            slice_directories.sort_by(|a, b| a.version.cmp(&b.version));
+            let slice_directories = slice_directories.into_iter()
+                                                     .map(|directory| directory.name)
+                                                     .collect();
+            Ok(slice_directories)
         }
-        assert!(!slice_directories.is_empty());
-        let (_, mut slice_directories) = slice_directories.into_iter().max().unwrap();
-        slice_directories.sort_by(|a, b| a.version.cmp(&b.version));
-        let slice_directories = slice_directories.into_iter()
-                                                 .map(|directory| directory.name)
-                                                 .collect();
-        Ok(slice_directories)
+        Err(error) => Err(error)
     }
 }
 
@@ -114,6 +86,57 @@ impl Ord for SliceDirectory {
     fn cmp(&self, other: &Self) -> Ordering {
         self.version.cmp(&other.version)
     }
+}
+
+fn get_directories_in_directory(directory: &Path)
+    -> Result<Vec<DirEntry>, String> {
+    match read_dir(directory) {
+        Ok(result) => {
+            let directories: Vec<DirEntry> = result.filter(|entry| {
+                if let Ok(ref entry) = *entry {
+                    metadata(entry.path()).unwrap().is_dir()
+                } else {
+                    false
+                }
+            })
+            .map(|entry| entry.unwrap())
+            .collect();
+            Ok(directories)
+        }
+        Err(error) => match error.kind() {
+            ErrorKind::NotFound => {
+                let directory = directory.to_str().unwrap();
+                let error = format!("Directory \"{}\" is not exist", directory);
+                Err(error)
+            }
+            _ => Err(error.description().to_string())
+        }
+    }
+}
+
+fn group_directories_by_semver_major(directories: Vec<DirEntry>)
+    -> HashMap<u64, Vec<SliceDirectory>> {
+    let mut slice_directories: HashMap<u64, Vec<SliceDirectory>> = HashMap::new();
+    for directory in directories {
+        let directory = directory.path();
+        let directory_name = directory.file_name().unwrap().to_str().unwrap().to_string();
+        let (_, slice_version) = get_slice_name_and_version_from_string(&directory_name);
+        let slice_version = slice_version.unwrap();
+        let major = slice_version.major;
+        let slice_directory = SliceDirectory {
+            name: directory_name,
+            version: slice_version,
+        };
+        if slice_directories.contains_key(&major) {
+            let mut slice_directories_for_version = slice_directories.get_mut(&major).unwrap();
+            slice_directories_for_version.push(slice_directory);
+        } else {
+            let mut slice_directories_for_version = Vec::new();
+            slice_directories_for_version.push(slice_directory);
+            slice_directories.insert(major, slice_directories_for_version);
+        }
+    }
+    slice_directories
 }
 
 fn add_slices_from_directory(slices: &mut Vec<Slice>, directory: &Path) {
