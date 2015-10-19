@@ -9,6 +9,11 @@ pub struct Options {
 }
 
 impl Options {
+    pub fn new() -> Options {
+        Options { format: String::new(), outpath: String::new(),
+                  url: String::new() }
+    }
+
     fn get_format_option_name() -> &'static str {
         "f"
     }
@@ -48,11 +53,7 @@ impl Options {
 }
 
 pub fn parse_options() -> (String, Options, Vec<String>) {
-    let options = Options {
-        format: String::new(),
-        outpath: String::new(),
-        url: String::new(),
-    };
+    let options = Options::new();
     let options = RefCell::new(options);
 
     let mut args = env::args();
