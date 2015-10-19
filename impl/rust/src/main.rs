@@ -1,5 +1,5 @@
 extern crate sb;
-use sb::options_parse::parse_options;
+use sb::options_parse::{Options, parse_options};
 use sb::commands::command::Command;
 use sb::commands::fetch_command::FetchCommand;
 use sb::commands::find_command::FindCommand;
@@ -12,37 +12,16 @@ const DEFAULT_LAYER: &'static str = "jekyll";
 
 fn main() {
     let (app_path, options, mut arguments) = parse_options();
-
-    let root_directory = get_root_directory(&app_path);
-    let slice_root_directory = get_slice_root_directory(&root_directory);
     if arguments.is_empty() {
         panic!("Command expected")
-    } else {
-        let command = arguments.remove(0);
-        let command: &str = &command;
-        match command {
-            "find" => {
-                let layers = get_layers_from_arguments_or_default(&mut arguments);
-                let os = get_os_from_arguments_or_default(&mut arguments);
-                run_command(FindCommand {
-                    layers: layers,
-                    os: os,
-                    slice_root_directory: &slice_root_directory,
-                })
-            }
-            "fetch" => {
-                run_command(FetchCommand::new(&slice_root_directory))
-            }
-            "make" => {
-                let layers = get_layers_from_arguments_or_default(&mut arguments);
-                let os = get_os_from_arguments_or_default(&mut arguments);
-                let command = MakeCommand::new(layers, os, &root_directory,
-                                                   &slice_root_directory,
-                                                   options);
-                run_command(command)
-            }
-            _ => panic!("Unknown command \"{}\"", command)
-        }
+    }
+    let command = arguments.remove(0);
+    let command: &str = &command;
+    match command {
+        "find" => run_find_command(app_path, arguments),
+        "fetch" => run_fetch_command(app_path),
+        "make" => run_make_command(app_path, arguments, options),
+        _ => panic!("Unknown command \"{}\"", command)
     }
 }
 
@@ -65,9 +44,30 @@ fn get_layers_from_arguments_or_default(arguments: &mut Vec<String>) -> Vec<Stri
             .collect()
 }
 
-fn run_command<T>(mut command: T)
-    where T: Command {
-    command.run()
+fn run_fetch_command(app_path: String) {
+    let root_directory = get_root_directory(&app_path);
+    let slice_root_directory = get_slice_root_directory(&root_directory);
+    let mut command = FetchCommand::new(&slice_root_directory);
+    command.run();
+}
+
+fn run_find_command(app_path: String, mut arguments: Vec<String>) {
+    let layers = get_layers_from_arguments_or_default(&mut arguments);
+    let os = get_os_from_arguments_or_default(&mut arguments);
+    let root_directory = get_root_directory(&app_path);
+    let slice_root_directory = get_slice_root_directory(&root_directory);
+    let mut command = FindCommand::new(layers, os, &slice_root_directory);
+    command.run();
+}
+
+fn run_make_command(app_path: String, mut arguments: Vec<String>, options: Options) {
+    let layers = get_layers_from_arguments_or_default(&mut arguments);
+    let os = get_os_from_arguments_or_default(&mut arguments);
+    let root_directory = get_root_directory(&app_path);
+    let slice_root_directory = get_slice_root_directory(&root_directory);
+    let mut command = MakeCommand::new(layers, os, &root_directory,
+                                       &slice_root_directory, options);
+    command.run();
 }
 
 fn get_root_directory(app_path: &str) -> PathBuf {
