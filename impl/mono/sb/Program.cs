@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using sb.App;
+using sb.Core.App;
 
 namespace sb
 {
@@ -19,6 +19,13 @@ namespace sb
             Debugger.Break();
         }    
         
-        //todo: dock (tti, cur dir, cur user)    
+
+        // args reg command, options
+        // download zip and unpack
+        // fetch if newer, unstable, force
+        // handle versions everywhere
+        //todo: dock|run (tti, cur dir, cur user)  
+        // scratch your itch movement 
+        // plugins        
     }
 }

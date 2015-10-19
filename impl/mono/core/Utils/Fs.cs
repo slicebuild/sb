@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
-namespace sb.Test.Utils
+namespace sb.Core.Utils
 {
     public static class Fs
     {
@@ -42,31 +41,5 @@ namespace sb.Test.Utils
             process.WaitForExit();
             process.CancelOutputRead();
         }
-
-        public static void DeleteFolder(string path)
-        {
-            Directory.Delete(path, true);
-        }
-
-        public static void DeleteFolderExcept(string path, string preservedPath)
-        {
-            foreach (var dir in Directory.GetDirectories(path).ToList())
-            {
-                if (dir.ToLower() == preservedPath.ToLower())
-                    continue;
-                Directory.Delete(dir, true);
-            }
-        }
-
-        public static bool FolderExists(string path, string mask)
-        {
-            foreach (var dir in Directory.EnumerateDirectories(path))
-            {
-                if (new DirectoryInfo(dir).Name.Contains(mask))
-                    return true;
-            }
-            return false;
-        }
-
     }
 }

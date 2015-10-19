@@ -1,6 +1,7 @@
 ﻿using System;
+using sb_bbt;
 
-namespace sb_bbt
+namespace sb.TestBB
 {
     class Program
     {

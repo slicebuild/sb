@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using sb.Test.Utils;
 using sb_bbt.Utils;
 
 namespace sb_bbt.Tests.Fetch
