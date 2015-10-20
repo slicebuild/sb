@@ -37,7 +37,11 @@ impl<'a> MakeCommand<'a> {
     fn add_code_for_slice(&self, slice: &Slice,
                           current_code: &mut String,
                           available_slices: &mut Vec<Slice>) {
-        assert!(slice.get_os_list().contains(&self.os), "Slice \"{}\" does not support os \"{}\"", slice.name, self.os);
+        {
+            let os_list = slice.get_os_list();
+            assert!(os_list.contains(&self.os), "Slice \"{}\" does not support os \"{}\"",
+                    slice.name, self.os);
+        }
         if let Some(dep_section) = slice.sections.iter().find(|section| section.kind == Kind::Dep) {
             for dependency in &dep_section.items {
                 let dependency_position = available_slices.iter().position(|slice| {

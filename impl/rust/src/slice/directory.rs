@@ -5,6 +5,7 @@ use std::fs::{DirEntry, File, metadata, read_dir};
 use std::io::{ErrorKind, Read};
 use std::path::Path;
 use semver::Version;
+use super::get_relative_path_from;
 use super::Slice;
 use super::section::Section;
 
@@ -14,14 +15,14 @@ pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<Strin
             if directories.is_empty() {
                 return Err("There are no any slices".to_string())
             }
-            let slice_directories = group_directories_by_semver_major(directories);
-            assert!(!slice_directories.is_empty());
-            let (_, mut slice_directories) = slice_directories.into_iter().max().unwrap();
-            slice_directories.sort_by(|a, b| a.version.cmp(&b.version));
-            let slice_directories = slice_directories.into_iter()
-                                                     .map(|directory| directory.name)
-                                                     .collect();
-            Ok(slice_directories)
+            let directories = group_directories_by_semver_major(directories);
+            assert!(!directories.is_empty());
+            let (_, mut directories) = directories.into_iter().max().unwrap();
+            directories.sort_by(|a, b| a.version.cmp(&b.version));
+            let directories = directories.into_iter();
+            let directories = directories.map(|directory| directory.name)
+                                         .collect();
+            Ok(directories)
         }
         Err(error) => Err(error)
     }
@@ -37,12 +38,21 @@ pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path)
                 path.push(&directory);
                 let slices_from_directory = get_slices_from_directory(&path);
                 for slice in slices_from_directory {
-                    let added_before_slice_position = slices.iter().position(|other| {
-                        other.name == slice.name
-                    });
+                    /*
+                    {
+                        let added_before_slice = slices.iter().find(|other| {
+                            other.name == slice.name
+                        });
+                        if let Some(added_before_slice) = added_before_slice {
+                            panic!("{} {}", slice.path.display(), added_before_slice.path.display());
+                        }
+                    }
+                    */
+                    /*
                     if let Some(added_before_slice_position) = added_before_slice_position {
                         slices.remove(added_before_slice_position);
                     }
+                    */
                     slices.push(slice);
                 }
             }
@@ -55,6 +65,9 @@ pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path)
 pub fn get_slices_from_directory(directory: &Path) -> Vec<Slice> {
     let mut slices: Vec<Slice> = Vec::new();
     add_slices_from_directory(&mut slices, directory);
+    for slice in &mut slices {
+        slice.path = get_relative_path_from(&slice.path, directory).unwrap();
+    }
     slices
 }
 
@@ -184,13 +197,11 @@ fn get_slice_name_and_version_from_string(string: &String) -> (String, Option<Ve
 fn get_slice_from_file_path(file_path: &Path) -> Option<Slice> {
     if let Some(file_extension) = file_path.extension() {
         let file_extension = file_extension.to_str().unwrap();
-        match file_extension {
-            "md" | "txt" => None,
-            _ => get_slice_from_checked_file_path(&file_path),
+        if file_extension == "md" || file_extension == "txt" {
+            return None;
         }
-    } else {
-        get_slice_from_checked_file_path(&file_path)
     }
+    get_slice_from_checked_file_path(&file_path)
 }
 
 fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
@@ -210,14 +221,23 @@ fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
             return None
         }
     }
-    let file_stem = &file_path.file_stem().unwrap().to_str().unwrap().to_string();
-    let (slice_name, version) = get_slice_name_and_version_from_string(file_stem);
-    let slice = Slice {
-        name: slice_name,
-        version: version,
-        sections: sections,
-    };
-    Some(slice)
+    let file_name = &file_path.file_name().unwrap().to_str().unwrap().to_string();
+    let (slice_name, version) = get_slice_name_and_version_from_string(file_name);
+    if let Some(version) = version {
+        Some(Slice {
+            name: slice_name,
+            path: file_path.to_path_buf(),
+            version: version,
+            sections: sections,
+        })
+    } else {
+        Some(Slice {
+            name: slice_name,
+            path: file_path.to_path_buf(),
+            version: Version::parse("0.0.0").unwrap(),
+            sections: sections,
+        })
+    }
 }
 
 #[test]

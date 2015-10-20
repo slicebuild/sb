@@ -1,4 +1,8 @@
 pub use helper::check_slice_root_exists;
+pub use helper::get_relative_path_from;
+pub use slice::Slice;
+pub use slice::section::Section;
+pub use slice::section::Kind as SectionKind;
 extern crate curl;
 extern crate rustc_serialize;
 extern crate semver;

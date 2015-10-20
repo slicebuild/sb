@@ -45,6 +45,7 @@ impl Kind {
 }
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub struct Section {
     pub kind: Kind,
     pub items: Vec<String>,
