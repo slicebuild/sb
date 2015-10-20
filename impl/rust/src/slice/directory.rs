@@ -5,8 +5,8 @@ use std::fs::{DirEntry, File, metadata, read_dir};
 use std::io::{ErrorKind, Read};
 use std::path::Path;
 use semver::Version;
+use super::Slice;
 use super::section::Section;
-use super::item::Slice;
 
 pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<String>, String> {
     match get_directories_in_directory(&slices_directory) {

@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use super::command::Command;
 use super::super::options_parse::Options;
-use super::super::slice::item::Slice;
+use super::super::slice::Slice;
 use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 use super::super::slice::section::Kind;
 

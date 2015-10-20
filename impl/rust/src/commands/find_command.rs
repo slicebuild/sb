@@ -1,5 +1,5 @@
 use std::path::Path;
-use super::helper::check_slice_root_exists;
+use super::super::check_slice_root_exists;
 use super::command::Command;
 use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 

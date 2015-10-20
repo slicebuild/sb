@@ -2,7 +2,6 @@ use super::section::{Kind, Section};
 use std::ops::Deref;
 use semver::Version;
 
-#[derive(Debug)]
 pub struct Slice {
     pub name: String,
     pub version: Option<Version>,
