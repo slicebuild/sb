@@ -1,3 +1,4 @@
+#[derive(Clone)]
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub enum Kind {
@@ -44,6 +45,7 @@ impl Kind {
     }
 }
 
+#[derive(Clone)]
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct Section {

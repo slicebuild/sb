@@ -1,6 +1,9 @@
+use std::cell::RefCell;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
+use super::{DependentSlice, parse_slices};
 use super::command::Command;
 use super::super::options_parse::Options;
 use super::super::slice::Slice;
@@ -25,36 +28,31 @@ impl<'a> MakeCommand<'a> {
                       options: options }
     }
 
-    fn add_code_for_slice_with_name(&self, slice_name: &str,
-                                    current_code: &mut String,
-                                    available_slices: &mut Vec<Slice>) {
-        if let Some(slice_position) = available_slices.iter().position(|slice| slice.name == *slice_name) {
-            let slice = available_slices.remove(slice_position);
-            self.add_code_for_slice(&slice, current_code, available_slices);
-        }
-    }
-
-    fn add_code_for_slice(&self, slice: &Slice,
+    fn add_code_for_slice(&self, slice: Rc<RefCell<DependentSlice>>,
                           current_code: &mut String,
-                          available_slices: &mut Vec<Slice>) {
+                          visited_slices: &mut Vec<String>) {
+        let slice = slice.borrow();
         {
-            let os_list = slice.get_os_list();
+            let os_list = slice.slice.get_os_list();
             assert!(os_list.contains(&self.os), "Slice \"{}\" does not support os \"{}\"",
-                    slice.name, self.os);
+                    slice.slice.name, self.os);
         }
-        if let Some(dep_section) = slice.sections.iter().find(|section| section.kind == Kind::Dep) {
-            for dependency in &dep_section.items {
-                let dependency_position = available_slices.iter().position(|slice| {
-                    slice.name == *dependency
-                });
-                if let Some(dependency_position) = dependency_position {
-                    let dependency = available_slices.remove(dependency_position);
-                    self.add_code_for_slice(&dependency, current_code, available_slices);
+        for dependency in &slice.resolved_dependencies {
+            let dependency = dependency.clone();
+            let dependency_added_before = {
+                let dependency = dependency.borrow();
+                if visited_slices.contains(&dependency.slice.name) {
+                    true
+                } else {
+                    visited_slices.push(dependency.slice.name.clone());
+                    false
                 }
+            };
+            if !dependency_added_before {
+                self.add_code_for_slice(dependency, current_code, visited_slices);
             }
         }
-        let run_section = slice.sections.iter().find(|section| section.kind == Kind::Run).unwrap();
-        for item in &run_section.items {
+        for item in slice.slice.get_run_list() {
             current_code.push_str(&item);
             current_code.push('\n');
         }
@@ -62,12 +60,59 @@ impl<'a> MakeCommand<'a> {
 
     fn get_code_for_latest_slice(&self) -> Result<String, String> {
         match get_latest_slices_from_slice_root_directory(&self.slice_root_directory) {
-            Ok(mut slices) => {
-                let mut string = String::new();
+            Ok(slices) => {
+                let slices = parse_slices(slices);
+                let mut requested_slices = Vec::new();
+                let mut missing_requested_slices = Vec::new();
+                let mut missing_dependencies = Vec::new();
                 for layer in self.layers {
-                    self.add_code_for_slice_with_name(layer, &mut string, &mut slices);
+                    let slice = slices.iter().find(|slice| {
+                        let slice = slice.clone();
+                        let slice = slice.borrow();
+                        slice.slice.name == *layer
+                    });
+                    if let Some(slice) = slice {
+                        let slice_content = slice.clone();
+                        let slice_content = slice_content.borrow();
+                        let unresolved_dependencies = slice_content.unresolved_dependencies();
+                        if unresolved_dependencies.is_empty() {
+                            requested_slices.push(slice);
+                        } else {
+                            for dependency in unresolved_dependencies {
+                                missing_dependencies.push(dependency);
+                            }
+                        }
+                    } else {
+                        missing_requested_slices.push(layer.to_string());
+                    }
                 }
-                Ok(string)
+
+                let mut has_missing_slice = false;
+                if !missing_requested_slices.is_empty() {
+                    has_missing_slice = true;
+                    println!("Missing requested slices:");
+                    for slice in missing_requested_slices {
+                        println!("{}", slice);
+                    }
+                }
+                if !missing_dependencies.is_empty() {
+                    has_missing_slice = true;
+                    println!("Missing dependencies:");
+                    for dependency in missing_dependencies {
+                        println!("{}", dependency);
+                    }
+                }
+
+                if has_missing_slice {
+                    Err("Has missing dependencies".to_string())
+                } else {
+                    let mut visited_slices = Vec::new();
+                    let mut string = String::new();
+                    for slice in requested_slices {
+                        self.add_code_for_slice(slice.clone(), &mut string, &mut visited_slices);
+                    }
+                    Ok(string)
+                }
             }
             Err(error) => Err(error)
         }

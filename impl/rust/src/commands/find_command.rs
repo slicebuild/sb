@@ -1,9 +1,8 @@
-use std::collections::BTreeSet;
+use std::cell::RefCell;
+use std::collections::HashSet;
 use std::path::Path;
-use super::check_slice_root_exists;
-use super::command::Command;
-use super::SectionKind;
-use super::Slice;
+use std::rc::Rc;
+use super::{check_slice_root_exists, Command, DependentSlice, parse_slices, SectionKind, Slice};
 use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
 
 pub struct FindCommand<'a> {
@@ -30,26 +29,102 @@ impl<'a> FindCommand<'a> {
         os_list.contains(&self.os)
     }
 
-    fn print_found_requested_slices_section(&self, similar_slices: &Vec<&Slice>) {
-        let requested_slices = self.layers.iter().map(|layer| {
-            similar_slices.iter().filter(|slice| slice.name == *layer).max()
+    fn print_found_requested_slices_section(&self, slices: &Vec<Rc<RefCell<DependentSlice>>>) {
+        let slices = slices.iter().filter(|slice| {
+            let slice = slice.clone();
+            let slice = slice.borrow();
+            slice.missing_dependencies.is_empty()
         });
-        let requested_slices = requested_slices.filter(|slice| slice.is_some());
-        let requested_slices = requested_slices.map(|slice| slice.unwrap());
-        let requested_slices = requested_slices.collect::<Vec<_>>();
-        if requested_slices.len() == 0 {
+        let slices = slices.collect::<Vec<&Rc<RefCell<DependentSlice>>>>();
+        let mut found_slice_paths = Vec::new();
+        for layer in self.layers {
+            let slices = slices.iter().filter(|slice| {
+                let slice = slice.clone();
+                let slice = slice.borrow();
+                slice.slice.name == *layer
+            });
+            let mut best_slice_path = None;
+            let mut best_slice_version = None;
+            for slice in slices {
+                let slice = slice.clone();
+                let slice = slice.borrow();
+                if let Some(previous_best_slice_version) = best_slice_version {
+                    if previous_best_slice_version <= slice.slice.version {
+                        best_slice_version = Some(slice.slice.version.clone());
+                        best_slice_path = Some(slice.slice.path.clone());
+                    } else {
+                        best_slice_version = Some(previous_best_slice_version);
+                    }
+                } else {
+                    best_slice_path = Some(slice.slice.path.clone());
+                    best_slice_version = Some(slice.slice.version.clone());
+                }
+            }
+            if let Some(best_slice_path) = best_slice_path {
+                found_slice_paths.push(best_slice_path);
+            }
+        }
+        if found_slice_paths.len() == 0 {
             println!("Found requested: None");
         } else {
             println!("Found requested:");
-            for slice in &requested_slices {
-                println!("{}", slice.path.display());
+            for path in found_slice_paths {
+                println!("{}", path.display());
             }
         }
     }
 
-    fn print_missing_requested_slices_section(&self, visited_slices: &Vec<&str>) {
+    fn print_similar_slices_section(&self, slices: &Vec<Rc<RefCell<DependentSlice>>>) {
+        let similar_slices = slices.iter().filter(|slice| {
+            let slice = slice.clone();
+            let slice = slice.borrow();
+            self.is_slice_name_similar(&slice.slice.name)
+            && self.is_slice_supports_os(&slice.slice)
+        });
+        let similar_slices = similar_slices.map(|slice| {
+            let slice = slice.clone();
+            let slice = slice.borrow();
+            slice.slice.path.clone()
+        });
+        let similar_slices = similar_slices.collect::<Vec<_>>();
+        if similar_slices.len() == 0 {
+            return println!("All similar: None");
+        }
+
+        println!("All similar:");
+        for slice in similar_slices {
+            println!("{}", slice.display());
+        }
+    }
+
+    fn print_missing_dependencies_section(&self, slices: &Vec<Rc<RefCell<DependentSlice>>>) {
+        let mut missing_dependencies = HashSet::new();
+        for slice in slices {
+            let slice = slice.clone();
+            let slice = slice.borrow();
+            for dependency in &slice.missing_dependencies {
+                missing_dependencies.insert(dependency.to_string());
+            }
+        }
+        if missing_dependencies.len() == 0 {
+            return println!("All missing: None");
+        }
+
+        println!("All missing:");
+        for slice in missing_dependencies {
+            println!("{}", slice);
+        }
+    }
+
+    fn print_missing_requested_slices_section(&self, slices: &Vec<Rc<RefCell<DependentSlice>>>) {
         let missing_requested_slices = self.layers.iter().filter(|layer| {
-            !visited_slices.contains(layer)
+            let layer: &str = layer;
+            !slices.iter().any(|slice| {
+                let slice = slice.clone();
+                let slice = slice.borrow();
+                let name: String = slice.slice.name.to_string();
+                name.contains(layer)
+            })
         });
         let missing_requested_slices = missing_requested_slices.collect::<Vec<_>>();
         if missing_requested_slices.len() == 0 {
@@ -68,53 +143,13 @@ impl<'a> Command for FindCommand<'a> {
         check_slice_root_exists(self.slice_root_directory);
         match get_latest_slices_from_slice_root_directory(&self.slice_root_directory) {
             Ok(slices) => {
-                let mut missing_slice_dependencies = BTreeSet::<&str>::new();
-                let mut visited_slices = Vec::<&str>::new();
-                let mut similar_slices = Vec::<&Slice>::new();
-                for slice in &slices {
-                    visited_slices.push(&slice.name);
-                    if self.is_slice_name_similar(&slice.name)
-                    && self.is_slice_supports_os(slice) {
-                        similar_slices.push(slice);
-                    }
-                    missing_slice_dependencies.remove(&*slice.name);
-                    if let Some(dependencies) = slice.get_section_items(SectionKind::Dep) {
-                        for dependency in dependencies {
-                            if !visited_slices.contains(&dependency) {
-                                missing_slice_dependencies.insert(dependency);
-                            }
-                        }
-                    }
-                }
-
-                print_similar_slices_section(&similar_slices);
-                print_missing_dependencies(&missing_slice_dependencies);
-                self.print_found_requested_slices_section(&similar_slices);
-                self.print_missing_requested_slices_section(&visited_slices);
+                let slices = parse_slices(slices);
+                self.print_similar_slices_section(&slices);
+                self.print_missing_dependencies_section(&slices);
+                self.print_found_requested_slices_section(&slices);
+                self.print_missing_requested_slices_section(&slices);
             }
             Err(error) => println!("{}", error),
         }
-    }
-}
-
-fn print_similar_slices_section(similar_slices: &Vec<&Slice>) {
-    if similar_slices.len() == 0 {
-        return println!("All similar: None");
-    }
-
-    println!("All similar:");
-    for slice in similar_slices {
-        println!("{}", slice.path.display());
-    }
-}
-
-fn print_missing_dependencies(missing_dependencies: &BTreeSet<&str>) {
-    if missing_dependencies.len() == 0 {
-        return println!("All missing: None");
-    }
-
-    println!("All missing:");
-    for slice in missing_dependencies {
-        println!("{}", slice);
     }
 }
