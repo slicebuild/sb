@@ -30,48 +30,42 @@ impl Slice {
     ///     let slice = Slice { name: "".to_string(), path: PathBuf::new(),
     ///                         version: Version::parse("0.0.0").unwrap(),
     ///                         sections: sections };
-    ///     assert_eq!(slice.get_section_items(Kind::Os), Some(vec!["debian"]));
-    ///     assert_eq!(slice.get_section_items(Kind::Dep), None);
+    ///     assert_eq!(slice.section(Kind::Os), Some(vec!["debian"]));
+    ///     assert_eq!(slice.section(Kind::Dep), None);
     /// }
     /// ```
-    pub fn get_section_items(&self, section_kind: Kind) -> Option<Vec<&str>> {
+    pub fn section(&self, kind: Kind) -> Vec<&str> {
         let mut iter = self.sections.iter();
-        let section = iter.find(|section| section.kind == section_kind);
+        let section = iter.find(|section| section.kind == kind);
         if let Some(section) = section {
             let iter = section.items.iter();
             let items = iter.map(|item| item.deref()).collect::<Vec<&str>>();
-            Some(items)
-        } else {
-            None
-        }
-    }
-
-    pub fn dependencies(&self) -> Vec<&str> {
-        if let Some(dependencies) = self.get_section_items(Kind::Dep) {
-            dependencies
+            items
         } else {
             Vec::new()
         }
     }
 
-    pub fn supports_os(&self, os: &str) -> bool {
-        self.get_os_list().contains(&os)
+    pub fn dependencies(&self) -> Vec<&str> {
+        self.section(Kind::Dep)
     }
 
-    pub fn get_os_list(&self) -> Vec<&str> {
-        if let Some(os_list) = self.get_section_items(Kind::Os) {
-            os_list
-        } else {
-            panic!("Slice has no os section. Slice path = {}", self.path.display());
-        }
+    pub fn supports_os(&self, os: &str) -> bool {
+        self.oses().contains(&os)
+    }
+
+    pub fn oses(&self) -> Vec<&str> {
+        let section = self.section(Kind::Os);
+        assert!(!section.is_empty(), "Slice has no os section. Slice path = {}",
+                self.path.display());
+        section
     }
 
     pub fn run_section(&self) -> Vec<&str> {
-        if let Some(run_section) = self.get_section_items(Kind::Run) {
-            run_section
-        } else {
-            panic!("Slice has no run section. Slice path = {}", self.path.display())
-        }
+        let section = self.section(Kind::Run);
+        assert!(!section.is_empty(), "Slice has no run section. Slice path = {}",
+                self.path.display());
+        section
     }
 }
 
@@ -112,7 +106,7 @@ fn slice_get_os_list_works() {
         version: Version::parse("0.0.0").unwrap(),
         sections: sections,
     };
-    let os_list = slice.get_section_items(Kind::Os).unwrap();
+    let os_list = slice.section(Kind::Os).unwrap();
     assert_eq!(os_list.len(), 1);
     let os = *os_list.first().unwrap();
     assert_eq!(os, "debian-8.2");

@@ -4,6 +4,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use super::command::Command;
 use options_parse::Options;
+use formatters;
 use slice::directory;
 use slice::list::{DependentSlice, SliceList};
 
@@ -25,7 +26,7 @@ impl<'a> MakeCommand<'a> {
                       options: options }
     }
 
-    fn create_code_from_slices(slices: Vec<&DependentSlice>, visited_slices: &mut Vec<String>) -> String {
+    fn create_code_from_slices(&self, slices: Vec<&DependentSlice>, visited_slices: &mut Vec<String>) -> String {
         let mut code = String::new();
         for slice in slices {
             let slice_content = slice.content();
@@ -34,14 +35,11 @@ impl<'a> MakeCommand<'a> {
             }
             let dependencies = slice.resolved_dependencies();
             if !dependencies.is_empty() {
-                let dependency_code = MakeCommand::create_code_from_slices(dependencies,
-                                                                           visited_slices);
+                let dependency_code = self.create_code_from_slices(dependencies, visited_slices);
                 code.push_str(&dependency_code);
             }
-            for item in slice_content.run_section() {
-                code.push_str(item);
-                code.push('\n');
-            }
+            let slice_code = formatters::code_for_slice(slice_content, self.options.format());
+            code.push_str(&slice_code);
         }
         code
     }
@@ -75,7 +73,7 @@ impl<'a> MakeCommand<'a> {
                 }
                 let slices = resolved_slices.iter().map(|slice| slice.borrow()).collect::<Vec<_>>();
                 let mut visited_slices = Vec::new();
-                Ok(MakeCommand::create_code_from_slices(slices, &mut visited_slices))
+                Ok(self.create_code_from_slices(slices, &mut visited_slices))
             }
             Err(error) => Err(error)
         }

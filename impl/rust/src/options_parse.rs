@@ -1,17 +1,39 @@
-use std::cell::RefCell;
 use std::env;
+use std::str::FromStr;
+
+#[derive(Copy)]
+#[derive(Clone)]
+#[derive(Debug)]
+pub enum Format {
+    Docker,
+    Shell,
+}
+
+impl FromStr for Format {
+    type Err = &'static str;
+    fn from_str(str: &str) -> Result<Self, Self::Err> {
+        match str {
+            "d" => Ok(Format::Docker),
+            "sh" => Ok(Format::Shell),
+            _ => Err("Unknown format. Available formats = [d, sh]")
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Options {
-    pub format: String,
+    format: Format,
     pub outpath: String,
     pub url: String,
 }
 
 impl Options {
     pub fn new() -> Options {
-        Options { format: String::new(), outpath: String::new(),
-                  url: String::new() }
+        Options { format: Format::Shell, outpath: String::new(), url: String::new() }
+    }
+
+    pub fn format(&self) -> Format {
+        self.format
     }
 
     fn get_format_option_name() -> &'static str {
@@ -26,36 +48,28 @@ impl Options {
         "url"
     }
 
-    fn has_option_with_name(option_name: &String) -> bool {
+    fn set_option(&mut self, option_name: String, option_value: String) -> Result<(), String> {
         let format_option_name = Options::get_format_option_name();
         let outpath_option_name = Options::get_outpath_option_name();
         let url_option_name = Options::get_url_option_name();
 
-        option_name == format_option_name || option_name == outpath_option_name ||
-        option_name == url_option_name
-    }
-
-    fn set_option(&mut self, option_name: String, option_value: String) {
-        let format_option_name = Options::get_format_option_name();
-        let outpath_option_name = Options::get_outpath_option_name();
-        let url_option_name = Options::get_url_option_name();
-
-        if option_name == format_option_name {
-            self.format = option_value
-        } else if option_name == outpath_option_name {
-            self.outpath = option_value
-        } else if option_name == url_option_name {
-            self.url = option_value
-        } else {
-            println!("Unknown option = {}", option_name)
+        match option_name {
+            ref option_name if option_name == format_option_name => {
+                match Format::from_str(&option_value) {
+                    Ok(format) => self.format = format,
+                    Err(error) => return Err(error.to_string())
+                }
+            }
+            ref option_name if option_name == outpath_option_name => self.outpath = option_value,
+            ref option_name if option_name == url_option_name => self.url = option_value,
+            _ => return Err(format!("Unknown option = {}", option_name))
         }
+        Ok(())
     }
 }
 
 pub fn parse_options() -> (String, Options, Vec<String>) {
-    let options = Options::new();
-    let options = RefCell::new(options);
-
+    let mut options = Options::new();
     let mut args = env::args();
     let app_path = args.next().unwrap();
 
@@ -63,8 +77,10 @@ pub fn parse_options() -> (String, Options, Vec<String>) {
     let mut remaining_arguments: Vec<String> = Vec::new();
     for argument in args {
         if let Some(option_name) = current_option_name {
-            let mut options = options.borrow_mut();
-            options.set_option(option_name.to_string(), argument);
+            let result = options.set_option(option_name.to_string(), argument);
+            if let Err(error) = result {
+                panic!("{}", error);
+            }
             current_option_name = Option::None
         } else if argument.starts_with('-') {
             let argument_without_dashes = argument.trim_left_matches('-');
@@ -72,20 +88,16 @@ pub fn parse_options() -> (String, Options, Vec<String>) {
                 let parts: Vec<&str> = argument_without_dashes.splitn(2, '=').collect();
                 let option_name = parts.first().unwrap();
                 let option_value = parts.last().unwrap();
-                let mut options = options.borrow_mut();
-                options.set_option(option_name.to_string(), option_value.to_string());
-            } else {
-                let option_name = argument_without_dashes.to_string();
-                if Options::has_option_with_name(&option_name) {
-                    current_option_name = Some(option_name);
-                } else {
-                    println!("Unknown option {}", argument_without_dashes)
+                let result = options.set_option(option_name.to_string(), option_value.to_string());
+                if let Err(error) = result {
+                    panic!("{}", error);
                 }
+            } else {
+                current_option_name = Some(argument_without_dashes.to_string());
             }
         } else {
             remaining_arguments.push(argument)
         }
     }
-
-    (app_path, options.into_inner(), remaining_arguments)
+    (app_path, options, remaining_arguments)
 }
