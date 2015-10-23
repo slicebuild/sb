@@ -5,9 +5,9 @@ use std::fs::{DirEntry, File, metadata, read_dir};
 use std::io::{ErrorKind, Read};
 use std::path::Path;
 use semver::Version;
-use super::get_relative_path_from;
-use super::Slice;
+use super::item::Slice;
 use super::section::Section;
+use helper;
 
 pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<String>, String> {
     match get_directories_in_directory(&slices_directory) {
@@ -66,7 +66,7 @@ pub fn get_slices_from_directory(directory: &Path) -> Vec<Slice> {
     let mut slices: Vec<Slice> = Vec::new();
     add_slices_from_directory(&mut slices, directory);
     for slice in &mut slices {
-        slice.path = get_relative_path_from(&slice.path, directory).unwrap();
+        slice.path = helper::get_relative_path_from(&slice.path, directory).unwrap();
     }
     slices
 }

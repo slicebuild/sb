@@ -1,14 +1,11 @@
-use std::cell::RefCell;
+use std::borrow::Borrow;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::rc::Rc;
-use super::{DependentSlice, parse_slices};
 use super::command::Command;
-use super::super::options_parse::Options;
-use super::super::slice::Slice;
-use super::super::slice::directory::get_latest_slices_from_slice_root_directory;
-use super::super::slice::section::Kind;
+use options_parse::Options;
+use slice::directory;
+use slice::list::{DependentSlice, SliceList};
 
 pub struct MakeCommand<'a> {
     layers: &'a Vec<&'a str>,
@@ -28,91 +25,57 @@ impl<'a> MakeCommand<'a> {
                       options: options }
     }
 
-    fn add_code_for_slice(&self, slice: Rc<RefCell<DependentSlice>>,
-                          current_code: &mut String,
-                          visited_slices: &mut Vec<String>) {
-        let slice = slice.borrow();
-        {
-            let os_list = slice.slice.get_os_list();
-            assert!(os_list.contains(&self.os), "Slice \"{}\" does not support os \"{}\"",
-                    slice.slice.name, self.os);
-        }
-        for dependency in &slice.resolved_dependencies {
-            let dependency = dependency.clone();
-            let dependency_added_before = {
-                let dependency = dependency.borrow();
-                if visited_slices.contains(&dependency.slice.name) {
-                    true
-                } else {
-                    visited_slices.push(dependency.slice.name.clone());
-                    false
-                }
-            };
-            if !dependency_added_before {
-                self.add_code_for_slice(dependency, current_code, visited_slices);
+    fn create_code_from_slices(slices: Vec<&DependentSlice>, visited_slices: &mut Vec<String>) -> String {
+        let mut code = String::new();
+        for slice in slices {
+            let slice_content = slice.content();
+            if visited_slices.contains(&slice_content.name) {
+                continue;
+            }
+            let dependencies = slice.resolved_dependencies();
+            if !dependencies.is_empty() {
+                let dependency_code = MakeCommand::create_code_from_slices(dependencies,
+                                                                           visited_slices);
+                code.push_str(&dependency_code);
+            }
+            for item in slice_content.run_section() {
+                code.push_str(item);
+                code.push('\n');
             }
         }
-        for item in slice.slice.get_run_list() {
-            current_code.push_str(&item);
-            current_code.push('\n');
-        }
+        code
     }
 
     fn get_code_for_latest_slice(&self) -> Result<String, String> {
-        match get_latest_slices_from_slice_root_directory(&self.slice_root_directory) {
+        match directory::get_latest_slices_from_slice_root_directory(&self.slice_root_directory) {
             Ok(slices) => {
-                let slices = parse_slices(slices);
-                let mut requested_slices = Vec::new();
-                let mut missing_requested_slices = Vec::new();
-                let mut missing_dependencies = Vec::new();
+                let slice_list = SliceList::from_slices(slices);
+                let slice_list = slice_list.filter_for_os(self.os);
+                let mut unresolved_slices = Vec::new();
+                let mut resolved_slices = Vec::new();
                 for layer in self.layers {
-                    let slice = slices.iter().find(|slice| {
-                        let slice = slice.clone();
-                        let slice = slice.borrow();
-                        slice.slice.name == *layer
-                    });
-                    if let Some(slice) = slice {
-                        let slice_content = slice.clone();
-                        let slice_content = slice_content.borrow();
-                        let unresolved_dependencies = slice_content.unresolved_dependencies();
-                        if unresolved_dependencies.is_empty() {
-                            requested_slices.push(slice);
-                        } else {
-                            for dependency in unresolved_dependencies {
-                                missing_dependencies.push(dependency);
+                    if let Some(slice) = slice_list.find_slice(layer, None) {
+                        if slice.has_unresolved_dependencies() {
+                            for slice in slice.unresolved_dependencies() {
+                                unresolved_slices.push(slice.clone());
                             }
+                        } else {
+                            resolved_slices.push(slice.clone());
                         }
                     } else {
-                        missing_requested_slices.push(layer.to_string());
+                        unresolved_slices.push(layer.to_string());
                     }
                 }
-
-                let mut has_missing_slice = false;
-                if !missing_requested_slices.is_empty() {
-                    has_missing_slice = true;
-                    println!("Missing requested slices:");
-                    for slice in missing_requested_slices {
+                if !unresolved_slices.is_empty() {
+                    println!("Missing slices:");
+                    for slice in unresolved_slices {
                         println!("{}", slice);
                     }
+                    return Err("Has missing slices".to_string());
                 }
-                if !missing_dependencies.is_empty() {
-                    has_missing_slice = true;
-                    println!("Missing dependencies:");
-                    for dependency in missing_dependencies {
-                        println!("{}", dependency);
-                    }
-                }
-
-                if has_missing_slice {
-                    Err("Has missing dependencies".to_string())
-                } else {
-                    let mut visited_slices = Vec::new();
-                    let mut string = String::new();
-                    for slice in requested_slices {
-                        self.add_code_for_slice(slice.clone(), &mut string, &mut visited_slices);
-                    }
-                    Ok(string)
-                }
+                let slices = resolved_slices.iter().map(|slice| slice.borrow()).collect::<Vec<_>>();
+                let mut visited_slices = Vec::new();
+                Ok(MakeCommand::create_code_from_slices(slices, &mut visited_slices))
             }
             Err(error) => Err(error)
         }

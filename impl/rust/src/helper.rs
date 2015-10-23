@@ -4,14 +4,14 @@ use std::path::{Path, PathBuf};
 
 /// # Examples
 /// ```should_panic
-/// use sb::check_slice_root_exists;
+/// use sb::helper::check_slice_root_exists;
 /// use std::path::Path;
 /// let path = Path::new("/path/that/does/not/exist");
 /// check_slice_root_exists(path);
 /// ```
 
 /// ```
-/// use sb::check_slice_root_exists;
+/// use sb::helper::check_slice_root_exists;
 /// use std::env::current_dir;
 /// use std::path::Path;
 /// let path = current_dir().unwrap();
@@ -31,7 +31,7 @@ pub fn check_slice_root_exists(slice_root_directory: &Path) {
 
 /// # Examples
 /// ```
-/// use sb::get_relative_path_from;
+/// use sb::helper::get_relative_path_from;
 /// use std::path::Path;
 /// let path = Path::new("/base/path");
 /// let base = Path::new("/base");
@@ -40,7 +40,7 @@ pub fn check_slice_root_exists(slice_root_directory: &Path) {
 /// ```
 
 /// ```
-/// use sb::get_relative_path_from;
+/// use sb::helper::get_relative_path_from;
 /// use std::path::Path;
 /// let path = Path::new("/base/path");
 /// let wrong_base = Path::new("/wrong_base");
