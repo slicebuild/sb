@@ -109,12 +109,12 @@ myslices-1.2.2/m/mysql-4.1 CONFLICTS WITH slices-1.2.2/m/m/mysql-4.1.0
 
 1) **If no version requested - then the latest wins**
 
-debian == topmost in the sorted list with the name 'debian'
+debian == topmost in the sorted list with the name 'debian' (considering the bunch version)
 
 2) **If version provided - the highest starting at this version wins**
 
-mysql-4 == latest equal or above 4.0.0.0.0 with the name 'mysql' (considering the bunche version)
+mysql-4 == latest equal or above 4.0.0.0.0 with the name 'mysql' (considering the bunch version)
 
-ruby-2.1.2 == latest equal or above 2.1.2.0.0 with the name 'ruby' (considering the bunche version)
+ruby-2.1.2 == latest equal or above 2.1.2.0.0 with the name 'ruby' (considering the bunch version)
 
 *it means that internally there should be understanding how the slice name looked before been expanded to the 3 parts format.*
