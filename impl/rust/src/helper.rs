@@ -31,30 +31,30 @@ pub fn check_slice_root_exists(slice_root_directory: &Path) {
 
 /// # Examples
 /// ```
-/// use sb::helper::get_relative_path_from;
+/// use sb::helper::relative_path_from;
 /// use std::path::Path;
 /// let path = Path::new("/base/path");
 /// let base = Path::new("/base");
-/// let relative_path = get_relative_path_from(path, base);
+/// let relative_path = relative_path_from(path, base);
 /// assert_eq!(relative_path, Some(Path::new("path").to_path_buf()));
 /// ```
 
 /// ```
-/// use sb::helper::get_relative_path_from;
 /// use std::path::Path;
+/// use sb::helper::relative_path_from;
 /// let path = Path::new("/base/path");
 /// let wrong_base = Path::new("/wrong_base");
-/// let relative_path = get_relative_path_from(path, wrong_base);
+/// let relative_path = relative_path_from(path, wrong_base);
 /// assert_eq!(relative_path, None);
 /// ```
-pub fn get_relative_path_from(path: &Path, base: &Path) -> Option<PathBuf> {
+pub fn relative_path_from(path: &Path, base: &Path) -> Option<PathBuf> {
     let path = path.to_str().unwrap();
     let base = base.to_str().unwrap();
     if !path.starts_with(base) {
         return None
     }
     let path = &path[base.len()..];
-    let path = path.trim_matches('/');
+    let path = path.trim_matches(|c| c == '/' || c == '\\');
     let path = Path::new(path).to_path_buf();
     Some(path)
 }

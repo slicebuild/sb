@@ -1,0 +1,9 @@
+OS
+debian
+ubuntu
+
+RUN
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -q -y
+alias apt-get='apt-get --no-install-recommends'
+apt-get install -q -y apt-utils

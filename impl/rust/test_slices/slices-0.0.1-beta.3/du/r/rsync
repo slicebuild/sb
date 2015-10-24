@@ -1,0 +1,10 @@
+OS
+debian
+ubuntu
+
+DEP
+update
+
+RUN
+apt-get install -q -y rsync
+

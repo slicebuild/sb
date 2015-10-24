@@ -1,0 +1,9 @@
+OS
+debian
+ubuntu
+
+DEP
+fupdate
+
+RUN
+apt-get install -q -y wget

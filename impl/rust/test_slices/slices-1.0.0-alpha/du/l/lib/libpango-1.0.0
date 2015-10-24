@@ -1,0 +1,10 @@
+OS
+debian
+ubuntu
+
+DEP
+update
+
+RUN
+apt-get install -q -y libpango1.0-0
+

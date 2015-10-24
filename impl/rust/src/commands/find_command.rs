@@ -31,6 +31,7 @@ impl<'a> FindCommand<'a> {
         for slice in slices {
             println!("{}", slice.unwrap().content().path.display());
         }
+        println!("");
     }
 
     fn print_similar_slices_section(&self, slice_list: &SliceList) {
@@ -49,6 +50,7 @@ impl<'a> FindCommand<'a> {
         for slice in similar_slices {
             println!("{}", slice.content().path.display());
         }
+        println!("");
     }
 
     fn print_missing_dependencies_section(&self, slice_list: &SliceList) {
@@ -60,6 +62,7 @@ impl<'a> FindCommand<'a> {
         for slice in unresolved_dependencies {
             println!("{}", slice);
         }
+        println!("");
     }
 
     fn print_missing_requested_slices_section(&self, slice_list: &SliceList) {

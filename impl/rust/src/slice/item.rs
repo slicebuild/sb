@@ -30,8 +30,8 @@ impl Slice {
     ///     let slice = Slice { name: "".to_string(), path: PathBuf::new(),
     ///                         version: Version::parse("0.0.0").unwrap(),
     ///                         sections: sections };
-    ///     assert_eq!(slice.section(Kind::Os), Some(vec!["debian"]));
-    ///     assert_eq!(slice.section(Kind::Dep), None);
+    ///     assert_eq!(slice.section(Kind::Os), vec!["debian"]);
+    ///     assert_eq!(slice.section(Kind::Dep), Vec::<&str>::new());
     /// }
     /// ```
     pub fn section(&self, kind: Kind) -> Vec<&str> {
@@ -106,7 +106,7 @@ fn slice_get_os_list_works() {
         version: Version::parse("0.0.0").unwrap(),
         sections: sections,
     };
-    let os_list = slice.section(Kind::Os).unwrap();
+    let os_list = slice.section(Kind::Os);
     assert_eq!(os_list.len(), 1);
     let os = *os_list.first().unwrap();
     assert_eq!(os, "debian-8.2");

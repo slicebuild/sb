@@ -1,7 +1,6 @@
 use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::error::Error;
-use std::fs::{DirEntry, File, metadata, read_dir};
+use std::fs::{File, metadata, read_dir};
 use std::io::{ErrorKind, Read};
 use std::path::Path;
 use semver::Version;
@@ -9,19 +8,28 @@ use super::item::Slice;
 use super::section::Section;
 use helper;
 
+/// # Examples
+/// ```
+/// use std::env;
+/// use sb::slice::directory;
+/// let current_dir = env::current_dir();
+/// let mut current_dir = current_dir.unwrap().to_path_buf();
+/// current_dir.push("test_slices");
+/// match directory::get_latest_slice_directories(&current_dir) {
+///     Ok(directories) => {
+///         assert_eq!(directories, vec!["slices-1.0.0-alpha", "slices-1.0.1"]);
+///     }
+///     Err(error) => panic!("{}", error)
+/// }
+/// ```
 pub fn get_latest_slice_directories(slices_directory: &Path) -> Result<Vec<String>, String> {
     match get_directories_in_directory(&slices_directory) {
         Ok(directories) => {
             if directories.is_empty() {
                 return Err("There are no any slices".to_string())
             }
-            let directories = group_directories_by_semver_major(directories);
+            let directories = get_directories_with_max_semver_major(directories);
             assert!(!directories.is_empty());
-            let (_, mut directories) = directories.into_iter().max().unwrap();
-            directories.sort_by(|a, b| a.version.cmp(&b.version));
-            let directories = directories.into_iter();
-            let directories = directories.map(|directory| directory.name)
-                                         .collect();
             Ok(directories)
         }
         Err(error) => Err(error)
@@ -66,7 +74,7 @@ pub fn get_slices_from_directory(directory: &Path) -> Vec<Slice> {
     let mut slices: Vec<Slice> = Vec::new();
     add_slices_from_directory(&mut slices, directory);
     for slice in &mut slices {
-        slice.path = helper::get_relative_path_from(&slice.path, directory).unwrap();
+        slice.path = helper::relative_path_from(&slice.path, directory).unwrap();
     }
     slices
 }
@@ -97,19 +105,22 @@ impl Ord for SliceDirectory {
     }
 }
 
-fn get_directories_in_directory(directory: &Path)
-    -> Result<Vec<DirEntry>, String> {
+fn get_directories_in_directory(directory: &Path) -> Result<Vec<String>, String> {
     match read_dir(directory) {
         Ok(result) => {
-            let directories: Vec<DirEntry> = result.filter(|entry| {
+            let directories = result.filter(|entry| {
                 if let Ok(ref entry) = *entry {
                     metadata(entry.path()).unwrap().is_dir()
                 } else {
                     false
                 }
-            })
-            .map(|entry| entry.unwrap())
-            .collect();
+                                    })
+                                    .map(|entry| {
+                let path = entry.unwrap().path();
+                let path = helper::relative_path_from(&path, directory);
+                path.unwrap().to_str().unwrap().to_string()
+                                    })
+                                    .collect();
             Ok(directories)
         }
         Err(error) => match error.kind() {
@@ -123,29 +134,24 @@ fn get_directories_in_directory(directory: &Path)
     }
 }
 
-fn group_directories_by_semver_major(directories: Vec<DirEntry>)
-    -> HashMap<u64, Vec<SliceDirectory>> {
-    let mut slice_directories: HashMap<u64, Vec<SliceDirectory>> = HashMap::new();
-    for directory in directories {
-        let directory = directory.path();
-        let directory_name = directory.file_name().unwrap().to_str().unwrap().to_string();
-        let (_, slice_version) = get_slice_name_and_version_from_string(&directory_name);
-        let slice_version = slice_version.unwrap();
-        let major = slice_version.major;
-        let slice_directory = SliceDirectory {
-            name: directory_name,
-            version: slice_version,
-        };
-        if slice_directories.contains_key(&major) {
-            let mut slice_directories_for_version = slice_directories.get_mut(&major).unwrap();
-            slice_directories_for_version.push(slice_directory);
-        } else {
-            let mut slice_directories_for_version = Vec::new();
-            slice_directories_for_version.push(slice_directory);
-            slice_directories.insert(major, slice_directories_for_version);
-        }
+fn get_directories_with_max_semver_major(directories: Vec<String>) -> Vec<String> {
+    if directories.is_empty() {
+        return Vec::new();
     }
-    slice_directories
+
+    let mut directories = directories.into_iter()
+                                     .map(|d| {
+        let (_, version) = get_slice_name_and_version_from_string(&d);
+        (version, d)
+                                     })
+                                     .collect::<Vec<_>>();
+    directories.sort_by(|a, b| b.0.cmp(&a.0));
+    let major_version_max = directories[0].0.major;
+    let mut directories = directories.into_iter()
+                                     .filter(|d| d.0.major == major_version_max)
+                                     .collect::<Vec<_>>();
+    directories.sort_by(|a, b| a.0.cmp(&b.0));
+    directories.into_iter().map(|d| d.1).collect::<Vec<_>>()
 }
 
 fn add_slices_from_directory(slices: &mut Vec<Slice>, directory: &Path) {
@@ -162,15 +168,15 @@ fn add_slices_from_directory(slices: &mut Vec<Slice>, directory: &Path) {
     }
 }
 
-fn parse_version(string: &String) -> Option<Version> {
-    if let Ok(version) = Version::parse(&string) {
-        Some(version)
+fn parse_version(string: &str) -> Version {
+    if let Ok(version) = Version::parse(string) {
+        version
     } else {
-        None
+        Version { major: 0, minor: 0, patch: 0, pre: Vec::new(), build: Vec::new() }
     }
 }
 
-fn get_slice_name_and_version_from_string(string: &String) -> (String, Option<Version>) {
+fn get_slice_name_and_version_from_string(string: &String) -> (String, Version) {
     if let Some(dash_position) = string.find('-') {
         if let Some(dot_position) = string.find('.') {
             if dash_position < dot_position {
@@ -183,13 +189,13 @@ fn get_slice_name_and_version_from_string(string: &String) -> (String, Option<Ve
                 (String::new(), parse_version(&string))
             }
         } else {
-            (string.clone(), None)
+            (string.clone(), parse_version(""))
         }
     } else {
         if let Some(_) = string.find('.') {
             (String::new(), parse_version(&string))
         } else {
-            (string.clone(), None)
+            (string.clone(), parse_version(""))
         }
     }
 }
@@ -223,30 +229,35 @@ fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
     }
     let file_name = &file_path.file_name().unwrap().to_str().unwrap().to_string();
     let (slice_name, version) = get_slice_name_and_version_from_string(file_name);
-    if let Some(version) = version {
-        Some(Slice {
-            name: slice_name,
-            path: file_path.to_path_buf(),
-            version: version,
-            sections: sections,
-        })
-    } else {
-        Some(Slice {
-            name: slice_name,
-            path: file_path.to_path_buf(),
-            version: Version::parse("0.0.0").unwrap(),
-            sections: sections,
-        })
-    }
+    let slice = Slice { name: slice_name, path: file_path.to_path_buf(), version: version,
+                        sections: sections };
+    Some(slice)
 }
 
-#[test]
-fn test_get_slice_name_and_version_from_string() {
-    let string = "my-app-2.0.0-beta".to_string();
-    let (slice_name, version) = get_slice_name_and_version_from_string(&string);
-    assert_eq!(slice_name, "my-app");
-    let version = version.unwrap();
-    assert_eq!(version.major, 2);
-    assert_eq!(version.minor, 0);
-    assert_eq!(version.patch, 0);
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn get_directories_with_max_semver_major() {
+        let mut directories = Vec::new();
+        directories.push("slices-1.0.1");
+        directories.push("slices-0.2.1-beta.3");
+        directories.push("slices-1.0.0-alpha");
+        directories.push("slices-0.0.1-beta.3");
+        let directories = directories.into_iter().map(|d| d.to_string()).collect::<Vec<_>>();
+        let expected_result = vec!["slices-1.0.0-alpha", "slices-1.0.1"];
+        let expected_result = expected_result.into_iter()
+                                             .map(|d| d.to_string())
+                                             .collect::<Vec<_>>();
+        assert_eq!(super::get_directories_with_max_semver_major(directories), expected_result);
+    }
+
+    #[test]
+    fn get_slice_name_and_version_from_string() {
+        let string = "my-app-2.0.0-beta".to_string();
+        let (slice_name, version) = super::get_slice_name_and_version_from_string(&string);
+        assert_eq!(slice_name, "my-app");
+        assert_eq!(version.major, 2);
+        assert_eq!(version.minor, 0);
+        assert_eq!(version.patch, 0);
+    }
 }
