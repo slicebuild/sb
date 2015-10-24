@@ -151,8 +151,8 @@ enum Dependencies {
 mod tests {
     use std::path::PathBuf;
 	use std::rc::Rc;
-	use semver::Version;
 	use super::{Dependencies, DependentSlice, SliceList};
+	use helper;
     use slice::item::Slice;
 	use slice::section::{Kind, Section};
 
@@ -161,7 +161,7 @@ mod tests {
 	    let section = Section { kind: Kind::Dep, items: dependencies };
 	    let sections = vec![section];
 	    Slice { name: name.to_string(), path: PathBuf::new(),
-		        version: Version::parse("0.0.0").unwrap(), sections: sections }
+		        version: helper::zero_version(), sections: sections }
 	}
 
 	#[test]

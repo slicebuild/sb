@@ -1,6 +1,7 @@
 use std::io::ErrorKind;
 use std::fs::metadata;
 use std::path::{Path, PathBuf};
+use semver::Version;
 
 /// # Examples
 /// ```should_panic
@@ -57,4 +58,8 @@ pub fn relative_path_from(path: &Path, base: &Path) -> Option<PathBuf> {
     let path = path.trim_matches(|c| c == '/' || c == '\\');
     let path = Path::new(path).to_path_buf();
     Some(path)
+}
+
+pub fn zero_version() -> Version {
+    Version { major: 0, minor: 0, patch: 0, pre: Vec::new(), build: Vec::new() }
 }
