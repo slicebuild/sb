@@ -80,16 +80,21 @@ examples of a sorted list of slices:
 1) example of one bunch of slices in a folder slices-1.2.3
 
 1.2.3.0.0 | 4.1.2.0.0 | mysql
-1.2.3.0.0 | 2.0.0.0.0 | apache
-1.2.3.0.0 | 1.0.0.0.0 | apache
 
+1.2.3.0.0 | 2.0.0.0.0 | apache
+
+1.2.3.0.0 | 1.0.0.0.0 | apache
 
 2) example of two bunches of slices: slices-1.2.3 and slices-1.2.4-rc.1
 
 1.2.4.-1.1 | 4.1.2.0.0 | mysql
+
 1.2.4.-1.1 | 2.0.0.0.0 | apache
+
 1.2.3.0.0 | 4.1.2.0.0 | mysql
+
 1.2.3.0.0 | 2.0.0.0.0 | apache
+
 1.2.3.0.0 | 1.0.0.0.0 | apache
 
 11) **Two slices with the same name, version and bunch version are not allowed**
