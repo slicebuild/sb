@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use std::error::Error;
 use std::fs::{File, metadata, read_dir};
 use std::io::{ErrorKind, Read};
@@ -77,32 +76,6 @@ pub fn get_slices_from_directory(directory: &Path) -> Vec<Slice> {
         slice.path = helper::relative_path_from(&slice.path, directory).unwrap();
     }
     slices
-}
-
-struct SliceDirectory {
-    name: String,
-    version: Version,
-}
-
-impl PartialEq<SliceDirectory> for SliceDirectory {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.version == other.version
-    }
-}
-
-impl Eq for SliceDirectory {
-}
-
-impl PartialOrd<SliceDirectory> for SliceDirectory {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.version.partial_cmp(&other.version)
-    }
-}
-
-impl Ord for SliceDirectory {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.version.cmp(&other.version)
-    }
 }
 
 fn get_directories_in_directory(directory: &Path) -> Result<Vec<String>, String> {

@@ -94,7 +94,16 @@ impl SliceList {
 	}
 
 	pub fn unresolved_dependencies(&self) -> Vec<String> {
-	    Vec::new()
+	    let mut dependencies = Vec::new();
+		for slice in &self.slices {
+		    if slice.has_unresolved_dependencies() {
+			    let slice_dependencies = slice.unresolved_dependencies();
+				for dependency in slice_dependencies {
+				    dependencies.push(dependency.clone());
+				}
+			}
+		}
+	    dependencies
 	}
 
 	fn parse_slice(slice: Slice, slices: &mut Vec<Slice>, dependent_slices: &mut Vec<Rc<DependentSlice>>) -> Rc<DependentSlice> {
@@ -212,5 +221,15 @@ mod tests {
 		let dependencies = slice.resolved_dependencies();
 		assert_eq!(dependencies.len(), 1);
 		assert_eq!(dependencies[0].content().name, "wget");
+	}
+
+	#[test]
+	fn slice_list_with_unresolved_dependencies() {
+	    let slices = vec![create_slice("wget", Vec::new()),
+		                  create_slice("ruby", vec!["curl"]),
+						  create_slice("apache", vec!["ruby", "gooo"])];
+		let slice_list = SliceList::from_slices(slices);
+		let dependencies = slice_list.unresolved_dependencies();
+		assert_eq!(dependencies, vec!["curl", "gooo"]);
 	}
 }
