@@ -16,7 +16,15 @@ ruby-2.2.4-rc.1
 
 3) **In prerelease part there are only 2 places**
 
-names can only be: alpha, beta, rc
+alpha
+
+alpha.1
+
+beta.2
+
+rc.3
+
+prerelease names can only be: alpha, beta, rc
 
 4) **Missing parts of semver are inferred**
 
