@@ -46,21 +46,6 @@ pub fn get_latest_slices_from_slice_root_directory(slice_root_directory: &Path)
                 path.push(&directory);
                 let slices_from_directory = get_slices_from_directory(&path);
                 for slice in slices_from_directory {
-                    /*
-                    {
-                        let added_before_slice = slices.iter().find(|other| {
-                            other.name == slice.name
-                        });
-                        if let Some(added_before_slice) = added_before_slice {
-                            panic!("{} {}", slice.path.display(), added_before_slice.path.display());
-                        }
-                    }
-                    */
-                    /*
-                    if let Some(added_before_slice_position) = added_before_slice_position {
-                        slices.remove(added_before_slice_position);
-                    }
-                    */
                     slices.push(slice);
                 }
             }
@@ -142,11 +127,24 @@ fn add_slices_from_directory(slices: &mut Vec<Slice>, directory: &Path) {
     }
 }
 
-fn get_slice_name_and_version_from_string(string: &String) -> (String, Version) {
-    if let Some(pos) = string.find('-') {
-        (string[..pos].to_string(), version::parse(&string[pos+1..]))
-    } else {
-        (string.clone(), version::zero())
+fn get_slice_name_and_version_from_string(string: &str) -> (String, Version) {
+    let iter = string.chars().enumerate();
+    let positions = iter.filter(|&(_, c)| c == '-')
+                        .map(|(i, _)| i)
+                        .filter(|i| {
+        if let Some(char) = string.chars().nth(i + 1) {
+            char.is_digit(10)
+        } else {
+            false
+        }
+                        })
+                        .collect::<Vec<_>>();
+    match positions.len() {
+        0 => (string.to_string(), version::zero()),
+        _ => {
+            let pos = *positions.last().unwrap();
+            (string[..pos].to_string(), version::parse(&string[pos + 1..]))
+        }
     }
 }
 
@@ -174,7 +172,7 @@ fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
             sections.push(section);
             lines = remaining_lines;
         } else {
-            return None
+            return None;
         }
     }
     let file_name = &file_path.file_name().unwrap().to_str().unwrap().to_string();
@@ -186,6 +184,8 @@ fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
 
 #[cfg(test)]
 mod tests {
+    use version;
+
     #[test]
     fn get_directories_with_max_semver_major() {
         let mut directories = Vec::new();
@@ -199,6 +199,20 @@ mod tests {
                                              .map(|d| d.to_string())
                                              .collect::<Vec<_>>();
         assert_eq!(super::get_directories_with_max_semver_major(directories), expected_result);
+    }
+
+    #[test]
+    fn slice_with_only_major() {
+        let (name, version) = super::get_slice_name_and_version_from_string("apache-2");
+        assert_eq!(name, "apache");
+        assert_eq!(version, version::parse("2"));
+    }
+
+    #[test]
+    fn slice_with_dash_in_name() {
+        let (name, version) = super::get_slice_name_and_version_from_string("my-apache-2");
+        assert_eq!(name, "my-apache");
+        assert_eq!(version, version::parse("2"));
     }
 
     #[test]
