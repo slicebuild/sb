@@ -6,6 +6,7 @@ use semver::Version;
 use super::item::Slice;
 use super::section::Section;
 use helper;
+use version;
 
 /// # Examples
 /// ```
@@ -141,35 +142,11 @@ fn add_slices_from_directory(slices: &mut Vec<Slice>, directory: &Path) {
     }
 }
 
-fn parse_version(string: &str) -> Version {
-    if let Ok(version) = Version::parse(string) {
-        version
-    } else {
-        Version { major: 0, minor: 0, patch: 0, pre: Vec::new(), build: Vec::new() }
-    }
-}
-
 fn get_slice_name_and_version_from_string(string: &String) -> (String, Version) {
-    if let Some(dash_position) = string.find('-') {
-        if let Some(dot_position) = string.find('.') {
-            if dash_position < dot_position {
-                let slice = string[0..dot_position].to_string();
-                let last_dash_position = slice.rfind('-').unwrap();
-                let slice_name = string[0..last_dash_position].to_string();
-                let version = string[last_dash_position + 1..string.len()].to_string();
-                (slice_name, parse_version(&version))
-            } else {
-                (String::new(), parse_version(&string))
-            }
-        } else {
-            (string.clone(), parse_version(""))
-        }
+    if let Some(pos) = string.find('-') {
+        (string[..pos].to_string(), version::parse(&string[pos+1..]))
     } else {
-        if let Some(_) = string.find('.') {
-            (String::new(), parse_version(&string))
-        } else {
-            (string.clone(), parse_version(""))
-        }
+        (string.clone(), version::zero())
     }
 }
 
@@ -226,9 +203,9 @@ mod tests {
 
     #[test]
     fn get_slice_name_and_version_from_string() {
-        let string = "my-app-2.0.0-beta".to_string();
+        let string = "my_app-2.0.0-beta".to_string();
         let (slice_name, version) = super::get_slice_name_and_version_from_string(&string);
-        assert_eq!(slice_name, "my-app");
+        assert_eq!(slice_name, "my_app");
         assert_eq!(version.major, 2);
         assert_eq!(version.minor, 0);
         assert_eq!(version.patch, 0);

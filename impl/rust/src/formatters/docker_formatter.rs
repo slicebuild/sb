@@ -28,7 +28,7 @@ pub fn code_for_slice(slice: &Slice) -> String {
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
-    use helper;
+    use version;
     use slice::item::Slice;
     use slice::section::{Kind, Section};
 
@@ -38,7 +38,7 @@ mod tests {
         let items = run_section_items.into_iter().map(|i| i.to_string()).collect::<Vec<_>>();
         let run_section = Section { kind: Kind::Run, items: items };
         Slice { name: "Hello".to_string(), path: PathBuf::new(),
-                version: helper::zero_version(), sections: vec![from_section, run_section] }
+                version: version::zero(), sections: vec![from_section, run_section] }
     }
 
     #[test]

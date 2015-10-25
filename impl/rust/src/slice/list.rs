@@ -152,7 +152,7 @@ mod tests {
     use std::path::PathBuf;
 	use std::rc::Rc;
 	use super::{Dependencies, DependentSlice, SliceList};
-	use helper;
+	use version;
     use slice::item::Slice;
 	use slice::section::{Kind, Section};
 
@@ -161,7 +161,7 @@ mod tests {
 	    let section = Section { kind: Kind::Dep, items: dependencies };
 	    let sections = vec![section];
 	    Slice { name: name.to_string(), path: PathBuf::new(),
-		        version: helper::zero_version(), sections: sections }
+		        version: version::zero(), sections: sections }
 	}
 
 	#[test]
