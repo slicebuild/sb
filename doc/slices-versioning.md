@@ -2,6 +2,10 @@
 
 1) **All versions adhere to the semver format http://semver.org**
 
+file name can comprise of letters, dashes, underscores, dots and numbers
+
+everything before the first dash + number is considered a name: a-really_yes-really_long-name-2.0
+
 2) **Semver can be in prerelease format**
 
 ruby-2.2.4-alpha.2
