@@ -15,20 +15,19 @@ namespace sb.Core.App.Commands
         {
             Args.SetOption(Args.Options.Format, Args.OptionDefaults.FormatDocker);
 
-            var missingNamesList = new List<string>();
-            var layers = FindLayers(missingNamesList);
-            var path = MakePath(layers[0]);
+            var layers = BuildLayers();
+            var path = MakePath(layers[0], Args.TestDir);
 
-            if (missingNamesList.Count != 0)
+            if (layers.MissingInfos.Count != 0)
             {
-                ReportMissingRequested(layers, missingNamesList);
+                ReportMissingRequested(layers);
                 return;
             }
 
             Write(layers[0], path);
 
             var stdout = new List<string>();
-            Fs.RunProcess("docker", $"build -t wb-test {Path.GetDirectoryName(path)}", stdout);
+            Fs.RunProcess("docker", $"build -t sb-test {Path.GetDirectoryName(path)}", stdout);
 
             if (stdout.Count > 0)
             {

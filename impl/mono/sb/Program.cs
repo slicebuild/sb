@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using sb.Core.App;
 
 namespace sb
@@ -26,6 +25,8 @@ namespace sb
         //todo: dock|run (tti, cur dir, cur user)  
         // scratch your itch movement 
         // plugins 
-        // web station       
+        // web station      
+        // check sums for known files
+        // optimize from image layers 
     }
 }

@@ -3,12 +3,12 @@
 namespace sb.Core.Layers
 {
     /// <summary>
-    /// MissingLayer is used when the name can't be found in the registry.
+    /// MissingLayer is used when the required slice is missing.
     /// </summary>
     public class MissingLayer : Layer
     {
-        public MissingLayer(LayerList registryLayers, string name) 
-            : base(registryLayers, new MissingSlice(null), null)
+        public MissingLayer(SliceList sliceList, MissingSlice slice) 
+            : base(sliceList, slice)
         {
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -25,9 +26,12 @@ namespace sb.Core.App
             public const string Url = "";         
         }
 
+        public FileVersionInfo VersionInfo { get; }
         public string RootDir { get; }
         public string EnvDir { get; }
         public string SlicesDir { get; }
+        public string MakeDir { get; }
+        public string TestDir { get; }
         public ICommand Command { get; }
 
         private readonly Dictionary<string, string> _options = new Dictionary<string, string>();
@@ -37,6 +41,8 @@ namespace sb.Core.App
 
         public Args(string[] args)
         {
+            VersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+
             ParseOptions(args);
             ParseCommandAndParams(args);
 
@@ -44,8 +50,10 @@ namespace sb.Core.App
             RootDir = RootDir ?? "";
             EnvDir = Path.Combine(RootDir, ".sb");
             SlicesDir = Path.Combine(EnvDir, "slices");
+            MakeDir = Path.Combine(EnvDir, "make");
+            TestDir = Path.Combine(EnvDir, "test");
             Command = FindCommand(_command);
-        }        
+        }
 
         private void ParseOptions(string[] args)
         {

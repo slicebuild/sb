@@ -21,12 +21,24 @@ namespace sb.Core.Slices
                 Sections.Add(section);
             }
 
+            foreach (var s in Sections.Where(s => s.SectionType == SliceSection.Type.DEP))
+            {
+                foreach (var line in s.Lines.Where(l => !l.StartsWith("#")))
+                {
+                    var depInfo = new SemVerInfo(line);
+                    if (!DepInfos.Contains(depInfo))
+                        DepInfos.Add(depInfo);
+                }
+            }
+
             foreach (var s in Sections.Where(s => s.SectionType == SliceSection.Type.OS))
             {
                 foreach (var line in s.Lines.Where(l => !l.StartsWith("#")))
                 {
-                    var svn = SemVerNameParser.Parse(line);
-                    OsList.Add(svn.Name);
+                    var osInfo = new SemVerInfo(line);
+                    if (!OsInfos.Contains(osInfo))
+                        OsInfos.Add(osInfo);
+                    OsList.Add(osInfo.Name);
                 }
             }
         }
@@ -35,6 +47,14 @@ namespace sb.Core.Slices
         public SemVerInfo SemVerInfo { get; }
         public IList<SliceSection> Sections { get; } 
         public IList<string> OsList { get; }
+        public List<SemVerInfo> OsInfos { get; } = new List<SemVerInfo>();
+        public List<SemVerInfo> DepInfos { get; } = new List<SemVerInfo>();
+
+        public bool SupportsOs(SemVerInfo osSvi)
+        {
+            var os = OsInfos.Find(item => item.Name == osSvi.Name && item.CompareByNameSemVer(osSvi) >= 0);
+            return os != null;
+        }
 
         public override bool Equals(object obj)
         {

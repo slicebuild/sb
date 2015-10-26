@@ -1,19 +1,45 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using sb.Core.Utils;
 
 namespace sb.Core.Slices
 {
-    public class SliceList 
+    public class SliceList : IEnumerable<Slice>
     {
         private readonly List<Slice> _slices = new List<Slice>();
 
-        public IList<SemVerInfo> MissingVersions { get; } = new List<SemVerInfo>();
+        public IList<SemVerInfo> MissingInfos { get; } = new List<SemVerInfo>();
 
         public Slice this[int index] => _slices[index];
 
+        public int Count => _slices.Count;
+
         public void Add(Slice slice)
         {
+            if (_slices.Contains(slice))
+                throw new InvalidOperationException("Duplicate slice");
             _slices.Add(slice);
+        }
+
+        public void CheckDepInfos()
+        {
+            foreach (var slice in _slices)
+            {
+                FindSlices(slice.DepInfos.ToArray());
+            }
+        }
+
+        public IList<Slice> FindSimilar(IEnumerable<SemVerInfo> infos)
+        {
+            var list = new List<Slice>();
+            foreach (var info in infos)
+            {
+                var slice = _slices.Find(item => item.SemVerInfo.Name.Contains(info.Name));
+                if (slice != null)
+                    list.Add(slice);
+            }
+            return list;
         }
 
         public Slice FindSlice(SemVerInfo svi)
@@ -21,8 +47,8 @@ namespace sb.Core.Slices
             var slice = _slices.Find(item => item.SemVerInfo.Name == svi.Name && item.SemVerInfo.CompareByNameSemVer(svi) >= 0);
             if (slice == null)
             {
-                if (!MissingVersions.Contains(svi))
-                    MissingVersions.Add(svi);
+                if (!MissingInfos.Contains(svi))
+                    MissingInfos.Add(svi);
                 slice = new MissingSlice(svi);
             }
             return slice;
@@ -45,6 +71,16 @@ namespace sb.Core.Slices
         public void Sort()
         {
             _slices.Sort((x, y) => y.SemVerInfo.CompareTo(x.SemVerInfo));
+        }
+
+        public IEnumerator<Slice> GetEnumerator()
+        {
+            return _slices.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable) _slices).GetEnumerator();
         }
     }
 }

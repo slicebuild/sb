@@ -1,39 +1,35 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using sb.Core.Utils;
 
 namespace sb.Core.Slices
 {
-    public class SliceDirectoryList : List<SliceDirectory>
+    public class SliceDirectoryList
     {
-        private List<SliceDirectory> _directories = new List<SliceDirectory>();
+        private readonly List<SliceDirectory> _directories = new List<SliceDirectory>();
 
-        public SliceDirectoryList(string root)
+        public SliceDirectoryList(string root, int versionMajor)
         {
-            // Get the major part of the assembly version
-            var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-            var currentMajorVersion = fvi.FileMajorPart;
-
-            // Only add slices from the directories with same major version
-            foreach (var dir in new DirectoryInfo(root).EnumerateDirectories())
+            
+            var rootDir = new DirectoryInfo(root);
+            
+            foreach (var bunchDir in rootDir.EnumerateDirectories())
             {
-                var svi = new SemVerInfo(dir.Name);
-                if (svi.NameMajor == currentMajorVersion)
+                // Only add slices from the directories with same major version
+                var svi = new SemVerInfo(bunchDir.Name);
+                if (svi.NameMajor == versionMajor)
                 {
-                    Add(new SliceDirectory(dir.Parent?.FullName, svi));
-                    _directories.Add(new SliceDirectory(dir.Parent?.FullName, svi));
+                    _directories.Add(new SliceDirectory(rootDir, bunchDir, svi));
                 }
             }
         }
 
-        public SliceList Scan()
+        public SliceList Scan(SemVerInfo osInfo)
         {
             var list = new SliceList();
             foreach (var directory in _directories)
             {
-                var slices = directory.FindByOs("debian");
+                var slices = directory.Scan(osInfo);
                 foreach (var slice in slices)
                 {
                     list.Add(slice);

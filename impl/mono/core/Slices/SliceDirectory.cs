@@ -6,27 +6,29 @@ namespace sb.Core.Slices
 {
     public class SliceDirectory
     {
-        public SliceDirectory(string rootPath, SemVerInfo semVerInfo)
+        public SliceDirectory(DirectoryInfo rootDir, DirectoryInfo bunchDir, SemVerInfo bunchSvi)
         {
-            RootPath = rootPath;
-            SemVerInfo = semVerInfo;
+            RootDir = rootDir;
+            BunchDir = bunchDir;
+            BunchSvi = bunchSvi;
         }
 
-        public string RootPath { get; }
-        public SemVerInfo SemVerInfo { get; }
+        public DirectoryInfo RootDir { get; }
+        public DirectoryInfo BunchDir { get; }
+        public SemVerInfo BunchSvi { get; }
 
-        public IList<Slice> FindByOs(string osName)
+        public IList<Slice> Scan(SemVerInfo osInfo)
         {
             var list = new List<Slice>();
-            ScanFiles(RootPath, list, osName);
-            foreach (var dir in Directory.EnumerateDirectories(RootPath, "*.*", SearchOption.AllDirectories))
+            ScanFiles(BunchDir.FullName, list, osInfo);
+            foreach (var dir in Directory.EnumerateDirectories(BunchDir.FullName, "*.*", SearchOption.AllDirectories))
             {
-                ScanFiles(dir, list, osName);
+                ScanFiles(dir, list, osInfo);
             }            
             return list;
         }
 
-        private void ScanFiles(string dir, IList<Slice> list, string osName)
+        private void ScanFiles(string dir, IList<Slice> list, SemVerInfo osInfo)
         {
             foreach (var path in Directory.EnumerateFiles(dir))
             {
@@ -38,12 +40,12 @@ namespace sb.Core.Slices
                 if (ext == ".md" || ext == ".txt")
                     continue;
 
-                var relPath = path.Replace(RootPath, "");
-                var svi = new SemVerInfo(SemVerInfo.NameSemVer, fileName);
+                var relPath = path.Replace(RootDir.FullName, "");
+                var svi = new SemVerInfo(BunchSvi.NameSemVer, fileName);
                 var lines = File.ReadAllLines(path);
                 var slice = new Slice(relPath, svi, lines);
 
-                if (slice.OsList.Contains(osName))
+                if (slice.SupportsOs(osInfo))
                     list.Add(slice);
             }
         }

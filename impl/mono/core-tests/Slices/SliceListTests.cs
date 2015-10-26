@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using sb.Core.Slices;
 using sb.Core.Utils;
 using Xunit;
@@ -82,7 +83,18 @@ namespace sb.Core.Tests.Slices
             var svi = new SemVerInfo("item1-2.1");
             var slice = sliceList.FindSlice(svi);
             Assert.Equal(slice.GetType(), typeof(MissingSlice));
-            Assert.Equal(sliceList.MissingVersions[0], svi);
+            Assert.Equal(sliceList.MissingInfos[0], svi);
+        }
+
+        [Fact]
+        public void ThrowsOnDuplicate()
+        {
+            var sviB = new SemVerInfo("slices-1");
+            var sliceList = new SliceList();
+            sliceList.Add(new Slice(null, new SemVerInfo(sviB.NameSemVer, "item1-1"), new List<string>()));
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => sliceList.Add(new Slice(null, new SemVerInfo(sviB.NameSemVer, "item1-1"), new List<string>())));
+            Assert.NotNull(ex);
         }
     }
 }

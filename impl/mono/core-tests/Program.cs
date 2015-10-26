@@ -7,7 +7,7 @@ namespace sb.Core.Tests
     {
         private static void Main()
         {
-            new SliceListTests().TracksMissing();
+            new SliceListTests().ThrowsOnDuplicate();
         }
     }
 }

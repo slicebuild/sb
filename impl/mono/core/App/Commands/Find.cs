@@ -21,101 +21,53 @@ namespace sb.Core.App.Commands
         /// </summary>
         void ICommand.Run()
         {
-            var missingNamesList = new List<string>();
-            var layers = FindLayers(missingNamesList);
+            var layers = BuildLayers();
 
             ReportAllSimilar(layers);
             ReportAllMissing(layers);
             ReportFoundRequested(layers);
-            ReportMissingRequested(layers, missingNamesList);
+            ReportMissingRequested(layers);
         }
 
-        protected virtual IList<Layer> BuildLayers(IList<string> missingNamesList)
-        {
-            var layerParams = Args.GetLayerParams();
-            var osParam = Args.GetOsParam();
-
-            var list = new List<Slice>();
-            var os = SemVerNameParser.Parse(osParam);
-
-            var dirList = new SliceDirectoryList(Args.SlicesDir);
-            var sliceList = dirList.Scan();
-
-            var registryLayers = new LayerList(list, os.Name, sliceList);
-            var layers = registryLayers.FindLayers(layerParams);
-
-            if (layers.Count > 0)
-            {
-                // if there were more layers requested, 
-                // make them dependencies of the first layer
-                for (var i = layers.Count - 1; i >= 1; i--)
-                {
-                    layers[0].Dependencies.Insert(0, layers[i]);
-                }
-            }
-
-            WriteMissingNames(layers[0], missingNamesList);
-            return layers;
-        }
-        
         /// <summary>
-        /// Finds all layers requested on the cmd line.
+        /// Finds all slices requested on the cmd line and 
+        /// build the layers into a list 
         /// </summary>
         /// <returns></returns>
-        protected virtual IList<Layer> FindLayers(IList<string> missingNamesList)
+        protected virtual LayerList BuildLayers()
         {
             var layerParams = Args.GetLayerParams();
             var osParam = Args.GetOsParam();
 
-            var list = new List<Slice>();
-            var os = SemVerNameParser.Parse(osParam);
+            var layerInfos = layerParams.Select(layerParam => new SemVerInfo(layerParam)).ToList();
+            var osInfo = new SemVerInfo(osParam);
 
-            var dirList = new SliceDirectoryList(Args.SlicesDir);
-            dirList.ForEach(dir => list.AddRange(dir.FindByOs(os.Name)));
+            var dirList = new SliceDirectoryList(Args.SlicesDir, Args.VersionInfo.FileMajorPart);
+            var sliceList = dirList.Scan(osInfo);
 
-            var registryLayers = new LayerList(list, os.Name, null);
-            var layers = registryLayers.FindLayers(layerParams);
-
-            if (layers.Count > 0)
-            {
-                // if there were more layers requested, 
-                // make them dependencies of the first layer
-                for (var i = layers.Count - 1; i >= 1; i--)
-                {
-                    layers[0].Dependencies.Insert(0, layers[i]);
-                }
-            }
-
-            WriteMissingNames(layers[0], missingNamesList);
-            return layers;
+            var layerList = new LayerList(sliceList, osInfo, layerInfos);
+            return layerList;
         }
 
         /// <summary>
         /// Find all layers with names similar to the requested
         /// </summary>
-        /// <param name="layers"></param>
-        protected virtual void ReportAllSimilar(IList<Layer> layers)
+        /// <param name="layerList"></param>
+        protected virtual void ReportAllSimilar(LayerList layerList)
         {
-            var similarLayers = new List<Layer>();
-            foreach (var layer in layers)
-            {
-                foreach (var registryLayer in layer.RegistryLayers)
-                {
-                    if (registryLayer.SemVerName.Name.Contains(layer.SemVerName.Name))
-                        similarLayers.Add(registryLayer);
-                }
-            }
+            var similar = layerList.SliceList.FindSimilar(layerList.LayerInfos);
+
             Console.WriteLine();
-            if (similarLayers.Count == 0)
+            if (similar.Count == 0)
             {
                 Console.WriteLine("All Similar: None");
             }
             else
             {
                 Console.WriteLine("All Similar:");
-                foreach (var layer in similarLayers)
+                foreach (var slice in similar)
                 {
-                    Console.WriteLine(layer.RelPath);
+                    Console.WriteLine(slice.RelPath);
                 }
             }
         }
@@ -123,20 +75,20 @@ namespace sb.Core.App.Commands
         /// <summary>
         /// All missing layers in the registry
         /// </summary>
-        /// <param name="layers"></param>
-        protected virtual void ReportAllMissing(IList<Layer> layers)
+        /// <param name="layerList"></param>
+        protected virtual void ReportAllMissing(LayerList layerList)
         {
             Console.WriteLine();
-            if (layers[0].RegistryLayers.MissingNames.Count == 0)
+            if (layerList.SliceList.MissingInfos.Count == 0)
             {
                 Console.WriteLine("All Missing: None");
             }
             else
             {
                 Console.WriteLine("All Missing:");
-                foreach (var name in layers[0].RegistryLayers.MissingNames)
+                foreach (var info in layerList.SliceList.MissingInfos)
                 {
-                    Console.WriteLine(name);
+                    Console.WriteLine(info.Name);
                 }
             }
         }
@@ -144,10 +96,16 @@ namespace sb.Core.App.Commands
         /// <summary>
         /// Found requested layers
         /// </summary>
-        /// <param name="layers"></param>
-        protected virtual void ReportFoundRequested(IList<Layer> layers)
+        /// <param name="layerList"></param>
+        protected virtual void ReportFoundRequested(LayerList layerList)
         {
-            var foundLayers = layers.Where(item => !(item is MissingLayer)).ToList();
+            var foundLayers = new List<Layer>();
+            foreach (var info in layerList.LayerInfos)
+            {
+                var layer = layerList.FindLayer(info);
+                if (!(layer is MissingLayer))
+                    foundLayers.Add(layer);
+            }
             Console.WriteLine();
             if (foundLayers.Count == 0)
             {
@@ -158,7 +116,7 @@ namespace sb.Core.App.Commands
                 Console.WriteLine("Found Requested:");
                 foreach (var layer in foundLayers)
                 {
-                    Console.WriteLine(layer.RelPath);
+                    Console.WriteLine(layer.Slice.RelPath);
                 }
             }
         }
@@ -166,31 +124,18 @@ namespace sb.Core.App.Commands
         /// <summary>
         /// Missing dependencies of the requested layers
         /// </summary>
-        /// <param name="layers"></param>
-        /// <param name="missingNamesList"></param>
-        protected virtual void ReportMissingRequested(IList<Layer> layers, IList<string> missingNamesList)
+        /// <param name="layerList"></param>
+        protected virtual void ReportMissingRequested(LayerList layerList)
         {
             Console.WriteLine();
-            if (missingNamesList.Count == 0)
+            if (layerList.MissingInfos.Count == 0)
             {
                 Console.WriteLine("Missing Requested: None");
             }
             else
             {
                 Console.WriteLine("Missing Requested:");
-                Console.WriteLine(string.Join(Environment.NewLine, missingNamesList));
-            }
-        }
-
-        protected virtual void WriteMissingNames(Layer layer, IList<string> list)
-        {
-            if (layer is MissingLayer && !list.Contains(layer.SemVerName.Name))
-            {
-                list.Add(layer.SemVerName.Name);
-            }
-            foreach (var dependency in layer.Dependencies)
-            {
-                WriteMissingNames(dependency, list);
+                Console.WriteLine(string.Join(Environment.NewLine, layerList.MissingInfos.Select(item => item.Name)));
             }
         }
     }

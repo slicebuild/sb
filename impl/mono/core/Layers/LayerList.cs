@@ -1,70 +1,86 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using sb.Core.Slices;
+using sb.Core.Utils;
 
 namespace sb.Core.Layers
 {
-    /// <summary>
-    /// List of all Layers created out of the slices in the slices directory.
-    /// </summary>
-    public class LayerList : List<Layer>
+    public class LayerList : IEnumerable<Layer>
     {
-        /// <summary>
-        /// All slices from the slices directory and subdirectories 
-        /// become layers in a flat sorted list where they can be easily found
-        /// by name or by name + version. Also, each layer looks up it's dependencies.
-        /// </summary>
-        /// <param name="slices"></param>
-        /// <param name="osName"></param>
-        public LayerList(IList<Slice> slices, string osName, SliceList sliceList)
+        private readonly List<Layer> _layers = new List<Layer>();
+
+        public LayerList(SliceList sliceList, SemVerInfo osInfo, IList<SemVerInfo> layerInfos)
         {
-            OsName = osName;
-            foreach (var slice in slices)
+            SliceList = sliceList;
+            OsInfo = osInfo;
+            LayerInfos = layerInfos;
+
+            // first put the requested layers into the list
+            foreach (var layerInfo in layerInfos)
             {
-                Add(new Layer(this, slice, sliceList));
+                FindLayer(layerInfo);
             }
-            Sort((x, y) => y.SemVerName.CompareTo(x.SemVerName));
-            ForEach(l => l.FindDependenciesRecursive(this));
+
+            // then add the dependencies
+            foreach (var layerInfo in layerInfos)
+            {
+                FindLayer(layerInfo).FindDependenciesRecursive(this);
+            }
+
+            // then if there were more than one layers requested
+            // add other layers as the dependencies for the first one
+            for (var i = layerInfos.Count - 1; i > 0; i--)
+            {
+                _layers[0].InsertDependency(0, FindLayer(layerInfos[i]));
+            }
         }
 
-        public string OsName { get; }
-        public IList<string> MissingNames { get; } = new List<string>();
+        public SliceList SliceList { get; }
+        public SemVerInfo OsInfo { get; }
+        public IList<SemVerInfo> LayerInfos { get; }
+        public IList<SemVerInfo> MissingInfos { get; } = new List<SemVerInfo>();
 
-        /// <summary>
-        /// Layers are sorted by name (asc), then by folder version (desc), then by file version (desc)
-        /// FindLayers returns first matching layer with the same name and greatest version or NULL.
-        /// If the layer hasn't been found it's name is added to the MissingVersions list.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public Layer FindLayer(string name)
+        public Layer this[int index] => _layers[index];
+
+        public void Add(Layer layer)
         {
-            var layer = Find(item => item.SemVerName.Name == name);
+            if (!_layers.Contains(layer))
+                _layers.Add(layer);
+        }
+
+        public Layer FindLayer(SemVerInfo layerInfo)
+        {
+            var layer =
+                _layers.Find(
+                    item => item.Slice.SemVerInfo.Name == layerInfo.Name && item.Slice.SemVerInfo.CompareByNameSemVer(layerInfo) >= 0);
+
             if (layer == null)
             {
-                AddMissingName(name);
-                layer = new MissingLayer(this, name);
+                var slice = SliceList.FindSlice(layerInfo);
+                if (slice is MissingSlice)
+                {
+                    if (!MissingInfos.Contains(layerInfo))
+                        MissingInfos.Add(layerInfo);
+                    layer = new MissingLayer(SliceList, (MissingSlice) slice);
+                }
+                else
+                {
+                    layer = new Layer(SliceList, slice);
+                }
+                Add(layer);
             }
+
             return layer;
         }
 
-        public IList<Layer> FindLayers(string[] names)
+        public IEnumerator<Layer> GetEnumerator()
         {
-            var layers = new List<Layer>();
-            foreach (var name in names)
-            {
-                var layer = FindLayer(name);
-                if (!layers.Contains(layer))
-                {
-                    layers.Add(layer);
-                }
-            }
-            return layers;
+            return _layers.GetEnumerator();
         }
 
-        private void AddMissingName(string name)
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            if (!MissingNames.Contains(name))
-                MissingNames.Add(name);
+            return ((IEnumerable) _layers).GetEnumerator();
         }
     }
 }

@@ -95,7 +95,6 @@
     <Compile Include="Formatters\IFormatter.cs" />
     <Compile Include="Formatters\Shell\FormatterShell.cs" />
     <Compile Include="Layers\Layer.cs" />
-    <Compile Include="Layers\LayerComparer.cs" />
     <Compile Include="Layers\LayerList.cs" />
     <Compile Include="Layers\MissingLayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

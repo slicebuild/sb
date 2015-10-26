@@ -17,17 +17,16 @@ namespace sb.Core.App.Commands
 
         void ICommand.Run()
         {
-            var missingNamesList = new List<string>();
-            var layers = FindLayers(missingNamesList);
-            var path = MakePath(layers[0]);
-            if (missingNamesList.Count != 0)
+            var layers = BuildLayers();
+            var path = MakePath(layers[0], Args.MakeDir);
+            if (layers.MissingInfos.Count != 0)
             {
-                ReportMissingRequested(layers, missingNamesList);
+                ReportMissingRequested(layers);
                 return;                
             }
 
             Write(layers[0], path);
-        }        
+        }
 
         /// <summary>
         /// Returns the path where to write the output.
@@ -36,12 +35,13 @@ namespace sb.Core.App.Commands
         /// If there is a file already at the path - it get's deleted.
         /// </summary>
         /// <param name="layer"></param>
+        /// <param name="outPath"></param>
         /// <returns>path where to save the output</returns>
-        public virtual string MakePath(Layer layer)
+        public virtual string MakePath(Layer layer, string outPath)
         {
             var path = Args.GetOutPath();
             if (path.IsEmpty())
-                path = Path.Combine(Args.EnvDir, layer.SemVerName.ToString());
+                path = Path.Combine(outPath, layer.Slice.SemVerInfo.ToString());
 
             var dir = Path.GetDirectoryName(path);
             if (dir != null && !Directory.Exists(dir))
@@ -54,7 +54,7 @@ namespace sb.Core.App.Commands
         }
 
         /// <summary>
-        /// Writes the layer to disk using a formatter to prepare the output.
+        /// Writes the layer to disk using a formatter to filter the output.
         /// </summary>
         /// <param name="layer"></param>
         /// <param name="path"></param>
@@ -67,9 +67,9 @@ namespace sb.Core.App.Commands
         public virtual void Write(Layer layer, string path, IFormatter formatter)
         {
             var lines = new List<string>();
-            Write(layer, lines);
+            layer.Write(lines);
 
-            var slice = new Slice("", layer.SemVerName, lines);
+            var slice = new Slice("", layer.Slice.SemVerInfo, lines);
 
             var sb = new StringBuilder();
             formatter.Write(slice, sb);
@@ -79,24 +79,6 @@ namespace sb.Core.App.Commands
             {
                 swr.WriteLine(sb.ToString());
                 swr.Flush();
-            }
-        }
-
-        public virtual void Write(Layer layer, List<string> lines)
-        {
-            foreach (var dep in layer.Dependencies)
-            {
-                Write(dep, lines);
-                dep.Written = true;
-            }
-
-            if (!layer.Written)
-            {
-                foreach (var section in layer.Sections)
-                {
-                    lines.Add(section.SectionType.ToString());
-                    lines.AddRange(section.Lines);
-                }
             }
         }        
     }
