@@ -15,14 +15,14 @@ namespace sb.Core.Layers
         /// </summary>
         /// <param name="slices"></param>
         /// <param name="osName"></param>
-        public LayerList(IList<Slice> slices, string osName)
+        public LayerList(IList<Slice> slices, string osName, SliceList sliceList)
         {
             OsName = osName;
             foreach (var slice in slices)
             {
-                Add(new Layer(this, slice));
+                Add(new Layer(this, slice, sliceList));
             }
-            Sort(new LayerComparer());
+            Sort((x, y) => y.SemVerName.CompareTo(x.SemVerName));
             ForEach(l => l.FindDependenciesRecursive(this));
         }
 
@@ -32,7 +32,7 @@ namespace sb.Core.Layers
         /// <summary>
         /// Layers are sorted by name (asc), then by folder version (desc), then by file version (desc)
         /// FindLayers returns first matching layer with the same name and greatest version or NULL.
-        /// If the layer hasn't been found it's name is added to the MissingNames list.
+        /// If the layer hasn't been found it's name is added to the MissingVersions list.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>

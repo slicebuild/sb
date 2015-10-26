@@ -6,20 +6,20 @@ namespace sb.Core.Slices
 {
     public class SliceDirectory
     {
-        public SliceDirectory(string root, SemVerName semVerName)
+        public SliceDirectory(string rootPath, SemVerInfo semVerInfo)
         {
-            Root = root;
-            SemVerName = semVerName;
+            RootPath = rootPath;
+            SemVerInfo = semVerInfo;
         }
 
-        public string Root { get; }
-        public SemVerName SemVerName { get; }
+        public string RootPath { get; }
+        public SemVerInfo SemVerInfo { get; }
 
         public IList<Slice> FindByOs(string osName)
         {
             var list = new List<Slice>();
-            ScanFiles(Root, list, osName);
-            foreach (var dir in Directory.EnumerateDirectories(Root, "*.*", SearchOption.AllDirectories))
+            ScanFiles(RootPath, list, osName);
+            foreach (var dir in Directory.EnumerateDirectories(RootPath, "*.*", SearchOption.AllDirectories))
             {
                 ScanFiles(dir, list, osName);
             }            
@@ -38,10 +38,10 @@ namespace sb.Core.Slices
                 if (ext == ".md" || ext == ".txt")
                     continue;
 
-                var relPath = path.Replace(Root, "");
-                var svn = SemVerNameParser.Parse(fileName, SemVerName);
+                var relPath = path.Replace(RootPath, "");
+                var svi = new SemVerInfo(SemVerInfo.NameSemVer, fileName);
                 var lines = File.ReadAllLines(path);
-                var slice = new Slice(relPath, svn, lines);
+                var slice = new Slice(relPath, svi, lines);
 
                 if (slice.OsList.Contains(osName))
                     list.Add(slice);

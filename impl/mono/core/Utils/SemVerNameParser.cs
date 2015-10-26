@@ -12,7 +12,7 @@ namespace sb.Core.Utils
         /// 1.0.1
         /// 1.0.2-beta
         /// 2.3.5-rc.1
-        /// 4.3.2-alpha.1.2 - prerelase is two digits MAX!
+        /// 4.3.2-alpha.1.2 - prerelase is TWO digits MAX!
         /// </summary>
         public static SemVerName Parse(string text, SemVerName parentSemVerName = null)
         {

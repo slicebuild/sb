@@ -8,7 +8,7 @@ namespace sb.Core.Layers
     public class MissingLayer : Layer
     {
         public MissingLayer(LayerList registryLayers, string name) 
-            : base(registryLayers, new EmptySlice(name))
+            : base(registryLayers, new MissingSlice(null), null)
         {
         }
     }

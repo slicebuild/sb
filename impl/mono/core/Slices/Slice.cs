@@ -6,10 +6,10 @@ namespace sb.Core.Slices
 {
     public class Slice
     {
-        public Slice(string relPath, SemVerName semVerName, IList<string> lines)
+        public Slice(string relPath, SemVerInfo semVerInfo, IList<string> lines)
         {
             RelPath = relPath;
-            SemVerName = semVerName;
+            SemVerInfo = semVerInfo;
             Sections = new List<SliceSection>();
             OsList = new List<string>();
 
@@ -32,24 +32,24 @@ namespace sb.Core.Slices
         }
 
         public string RelPath { get; set; }
-        public SemVerName SemVerName { get; }
+        public SemVerInfo SemVerInfo { get; }
         public IList<SliceSection> Sections { get; } 
         public IList<string> OsList { get; }
 
         public override bool Equals(object obj)
         {
             var other = (Slice) obj;
-            return SemVerName.Equals(other.SemVerName);
+            return SemVerInfo.Equals(other.SemVerInfo);
         }
 
         public override int GetHashCode()
         {
-            return SemVerName.GetHashCode();
+            return SemVerInfo.GetHashCode();
         }
 
         public override string ToString()
         {
-            return SemVerName.ToString();
+            return SemVerInfo.ToString();
         }
     }
 }

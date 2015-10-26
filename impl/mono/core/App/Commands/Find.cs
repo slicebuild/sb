@@ -30,6 +30,34 @@ namespace sb.Core.App.Commands
             ReportMissingRequested(layers, missingNamesList);
         }
 
+        protected virtual IList<Layer> BuildLayers(IList<string> missingNamesList)
+        {
+            var layerParams = Args.GetLayerParams();
+            var osParam = Args.GetOsParam();
+
+            var list = new List<Slice>();
+            var os = SemVerNameParser.Parse(osParam);
+
+            var dirList = new SliceDirectoryList(Args.SlicesDir);
+            var sliceList = dirList.Scan();
+
+            var registryLayers = new LayerList(list, os.Name, sliceList);
+            var layers = registryLayers.FindLayers(layerParams);
+
+            if (layers.Count > 0)
+            {
+                // if there were more layers requested, 
+                // make them dependencies of the first layer
+                for (var i = layers.Count - 1; i >= 1; i--)
+                {
+                    layers[0].Dependencies.Insert(0, layers[i]);
+                }
+            }
+
+            WriteMissingNames(layers[0], missingNamesList);
+            return layers;
+        }
+        
         /// <summary>
         /// Finds all layers requested on the cmd line.
         /// </summary>
@@ -45,7 +73,7 @@ namespace sb.Core.App.Commands
             var dirList = new SliceDirectoryList(Args.SlicesDir);
             dirList.ForEach(dir => list.AddRange(dir.FindByOs(os.Name)));
 
-            var registryLayers = new LayerList(list, os.Name);
+            var registryLayers = new LayerList(list, os.Name, null);
             var layers = registryLayers.FindLayers(layerParams);
 
             if (layers.Count > 0)
