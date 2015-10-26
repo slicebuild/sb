@@ -1,12 +1,38 @@
 extern crate zip;
-use curl::http;
-use rustc_serialize::json::Json;
-use semver::Version;
 use std::fs::{create_dir, create_dir_all, File};
 use std::io::{Cursor, Read, Write};
 use std::path::{Path, PathBuf};
+use curl::http;
+use rustc_serialize::json::Json;
+use semver::Version;
 use zip::read::ZipArchive;
+use version;
 use super::command::Command;
+
+fn choose_latest_version(array: &Vec<Json>) -> Version {
+    let mut latest_version: Option<Version> = None;
+    assert!(!array.is_empty());
+    for item in array {
+        let object = item.as_object().unwrap();
+        let name = object.get("name").unwrap();
+        let name = name.as_string().unwrap();
+        if name == "master" {
+            continue;
+        }
+
+        let version = version::parse(&name);
+        if let Some(some_latest_version) = latest_version {
+            if some_latest_version < version {
+                latest_version = Some(version);
+            } else {
+                latest_version = Some(some_latest_version);
+            }
+        } else {
+            latest_version = Some(version);
+        }
+    }
+    latest_version.unwrap()
+}
 
 pub struct FetchCommand<'a> {
     slice_root_directory: &'a Path,
@@ -23,31 +49,6 @@ impl<'a> FetchCommand<'a> {
         FetchCommand { slice_root_directory: slice_root_directory }
     }
 
-    fn choose_latest_version(array: &Vec<Json>) -> Version {
-        let mut latest_version: Option<Version> = None;
-        assert!(!array.is_empty());
-        for item in array {
-            let object = item.as_object().unwrap();
-            let name = object.get("name").unwrap();
-            let name = name.as_string().unwrap();
-            if name == "master" {
-                continue;
-            }
-
-            let version = Version::parse(&name).unwrap();
-            if let Some(some_latest_version) = latest_version {
-                if some_latest_version < version {
-                    latest_version = Some(version);
-                } else {
-                    latest_version = Some(some_latest_version);
-                }
-            } else {
-                latest_version = Some(version);
-            }
-        }
-        latest_version.unwrap()
-    }
-
     fn execute_request_to_uri(uri: &str) -> Vec<u8> {
         let mut handle = http::handle();
         let request = handle.get(uri).header("user-agent", "Mozilla/4.0 (compatible)");
@@ -61,7 +62,7 @@ impl<'a> FetchCommand<'a> {
         let body = String::from_utf8(body).unwrap();
         let json = Json::from_str(&body).unwrap();
         let array = json.as_array().unwrap();
-        FetchCommand::choose_latest_version(array)
+        choose_latest_version(array)
     }
 
     fn download_latest_version() -> Vec<u8> {

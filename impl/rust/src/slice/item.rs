@@ -21,16 +21,16 @@ impl Slice {
     /// extern crate sb;
     /// use std::path::PathBuf;
     /// use semver::Version;
-    /// use sb::helper;
     /// use sb::slice::section::{Section, Kind};
     /// use sb::slice::item::Slice;
     ///
     /// fn main() {
     ///     let section = Section { kind: Kind::Os, items: vec!["debian".to_string()] };
     ///     let sections = vec![section];
+    ///     let version = Version { major: 0, minor: 0, patch: 0, pre: Vec::new(),
+    ///                             build: Vec::new() };
     ///     let slice = Slice { name: "".to_string(), path: PathBuf::new(),
-    ///                         version: helper::zero_version(),
-    ///                         sections: sections };
+    ///                         version: version, sections: sections };
     ///     assert_eq!(slice.section(Kind::Os), vec!["debian"]);
     ///     assert_eq!(slice.section(Kind::Dep), Vec::<&str>::new());
     /// }
@@ -88,7 +88,7 @@ impl Ord for Slice {
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
-    use helper;
+    use version;
     use slice::item::Slice;
     use slice::section::{Kind, Section};
 
@@ -111,7 +111,7 @@ mod tests {
         let slice = Slice {
             name: "Slice".to_string(),
             path: PathBuf::new(),
-            version: helper::zero_version(),
+            version: version::zero(),
             sections: sections,
         };
         let os_list = slice.section(Kind::Os);

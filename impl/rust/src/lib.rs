@@ -8,3 +8,4 @@ pub mod helper;
 pub mod options_parse;
 pub mod slice;
 mod formatters;
+mod version;

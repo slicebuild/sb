@@ -113,7 +113,7 @@ examples of a sorted list of slices:
 
 slices-1.0.0/a/apache CONFLICTS WITH slices-1.0.0/a/a/a/apache 
 
-now allowed even across bunches (since the bunch name is not considered):
+not allowed even across bunches (since the bunch name is not considered):
 
 myslices-1.2.2/m/mysql-4.1 CONFLICTS WITH slices-1.2.2/m/m/mysql-4.1.0
 
