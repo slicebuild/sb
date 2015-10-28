@@ -4,38 +4,26 @@ use std::io::{Cursor, Read, Write};
 use std::path::{Path, PathBuf};
 use curl::http;
 use rustc_serialize::json::Json;
-use semver::Version;
 use zip::read::ZipArchive;
 use version;
 use super::command::Command;
 
-fn choose_latest_version(array: &Vec<Json>) -> Version {
-    let mut latest_version: Option<Version> = None;
-    assert!(!array.is_empty());
-    for item in array {
-        let object = item.as_object().unwrap();
-        let name = object.get("name").unwrap();
-        let name = name.as_string().unwrap();
-        if name == "master" {
-            continue;
-        }
-
-        let version = version::parse(&name);
-        if let Some(some_latest_version) = latest_version {
-            if some_latest_version < version {
-                latest_version = Some(version);
-            } else {
-                latest_version = Some(some_latest_version);
-            }
-        } else {
-            latest_version = Some(version);
-        }
-    }
-    latest_version.unwrap()
-}
-
 pub struct FetchCommand<'a> {
     slice_root_directory: &'a Path,
+}
+
+/// # Panics
+/// Panics for empty versions
+fn choose_latest_version<'a>(versions: &'a Vec<&str>) -> &'a str {
+    assert_not_empty!(versions);
+    let iter = versions.iter().enumerate();
+    let (_, i) = iter.map(|(i, v)| {
+        let (_, version) = version::extract_name_and_version(v);
+        (version, i)
+                     })
+                     .max()
+                     .unwrap();
+    versions.iter().nth(i).unwrap()
 }
 
 impl<'a> FetchCommand<'a> {
@@ -56,17 +44,38 @@ impl<'a> FetchCommand<'a> {
         response.move_body()
     }
 
-    fn determine_latest_version() -> Version {
+    fn determine_latest_version() -> String {
         let body = FetchCommand::execute_request_to_uri("https://api.github.\
                                                          com/repos/slicebuild/slices/branches");
         let body = String::from_utf8(body).unwrap();
         let json = Json::from_str(&body).unwrap();
         let array = json.as_array().unwrap();
-        choose_latest_version(array)
+        let iter = array.into_iter();
+        let versions = iter.map(|item| {
+            match item.as_object() {
+                Some(obj) => {
+                    let field = "name".to_string();
+                    match obj.get(&field) {
+                        Some(name) => {
+                            match name.as_string() {
+                                Some(name) => name,
+                                None => panic!("{} is not a string", field)
+                            }
+                        },
+                        None => panic!("Object has no \"{}\" field", field)
+                    }
+                }
+                None => panic!("Expected object, but received {:?}", item)
+            }
+                           })
+                           .filter(|name| *name != "master")
+                           .collect::<Vec<_>>();
+        choose_latest_version(&versions).to_string()
     }
 
     fn download_latest_version() -> Vec<u8> {
         let version = FetchCommand::determine_latest_version();
+        println!("Version = {}", version);
         let uri = format!("https://codeload.github.com/slicebuild/slices/zip/{}",
                           version);
         FetchCommand::execute_request_to_uri(&uri)
@@ -104,5 +113,18 @@ impl<'a> Command for FetchCommand<'a> {
         let zip_archive = ZipArchive::new(cursor).unwrap();
         let directory = self.slice_root_directory.to_path_buf();
         FetchCommand::extract_archive_into_directory(zip_archive, directory);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn choose_latest_version() {
+        let versions = vec!["du-0.0.1-rc.1",
+                            "du-0.0.2",
+                            "my-du-1.0.0",
+                            "ubuntu-only-1.0.1",
+                            "fed-2.1.1"];
+        assert_eq!(super::choose_latest_version(&versions), "fed-2.1.1");
     }
 }

@@ -2,7 +2,6 @@ use std::error::Error;
 use std::fs::{File, metadata, read_dir};
 use std::io::{ErrorKind, Read};
 use std::path::Path;
-use semver::Version;
 use super::item::Slice;
 use super::section::Section;
 use helper;
@@ -100,7 +99,7 @@ fn get_directories_with_max_semver_major(directories: Vec<String>) -> Vec<String
 
     let mut directories = directories.into_iter()
                                      .map(|d| {
-        let (_, version) = get_slice_name_and_version_from_string(&d);
+        let (_, version) = version::extract_name_and_version(&d);
         (version, d)
                                      })
                                      .collect::<Vec<_>>();
@@ -123,27 +122,6 @@ fn add_slices_from_directory(slices: &mut Vec<Slice>, directory: &Path) {
             if let Some(slice) = get_slice_from_file_path(&entry_path) {
                 slices.push(slice);
             }
-        }
-    }
-}
-
-fn get_slice_name_and_version_from_string(string: &str) -> (String, Version) {
-    let iter = string.chars().enumerate();
-    let positions = iter.filter(|&(_, c)| c == '-')
-                        .map(|(i, _)| i)
-                        .filter(|i| {
-        if let Some(char) = string.chars().nth(i + 1) {
-            char.is_digit(10)
-        } else {
-            false
-        }
-                        })
-                        .collect::<Vec<_>>();
-    match positions.len() {
-        0 => (string.to_string(), version::zero()),
-        _ => {
-            let pos = *positions.last().unwrap();
-            (string[..pos].to_string(), version::parse(&string[pos + 1..]))
         }
     }
 }
@@ -176,7 +154,7 @@ fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
         }
     }
     let file_name = &file_path.file_name().unwrap().to_str().unwrap().to_string();
-    let (slice_name, version) = get_slice_name_and_version_from_string(file_name);
+    let (slice_name, version) = version::extract_name_and_version(file_name);
     let slice = Slice { name: slice_name, path: file_path.to_path_buf(), version: version,
                         sections: sections };
     Some(slice)
@@ -184,8 +162,6 @@ fn get_slice_from_checked_file_path(file_path: &Path) -> Option<Slice> {
 
 #[cfg(test)]
 mod tests {
-    use version;
-
     #[test]
     fn get_directories_with_max_semver_major() {
         let mut directories = Vec::new();
@@ -199,29 +175,5 @@ mod tests {
                                              .map(|d| d.to_string())
                                              .collect::<Vec<_>>();
         assert_eq!(super::get_directories_with_max_semver_major(directories), expected_result);
-    }
-
-    #[test]
-    fn slice_with_only_major() {
-        let (name, version) = super::get_slice_name_and_version_from_string("apache-2");
-        assert_eq!(name, "apache");
-        assert_eq!(version, version::parse("2"));
-    }
-
-    #[test]
-    fn slice_with_dash_in_name() {
-        let (name, version) = super::get_slice_name_and_version_from_string("my-apache-2");
-        assert_eq!(name, "my-apache");
-        assert_eq!(version, version::parse("2"));
-    }
-
-    #[test]
-    fn get_slice_name_and_version_from_string() {
-        let string = "my_app-2.0.0-beta".to_string();
-        let (slice_name, version) = super::get_slice_name_and_version_from_string(&string);
-        assert_eq!(slice_name, "my_app");
-        assert_eq!(version.major, 2);
-        assert_eq!(version.minor, 0);
-        assert_eq!(version.patch, 0);
     }
 }
