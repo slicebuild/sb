@@ -81,7 +81,7 @@ impl<'a> FindCommand<'a> {
 
 impl<'a> Command for FindCommand<'a> {
     fn run(&mut self) {
-        helper::check_slice_root_exists(self.slice_root_directory);
+        helper::assert_slice_root_exists(self.slice_root_directory);
         match directory::get_latest_slices_from_slice_root_directory(&self.slice_root_directory) {
             Ok(slices) => {
                 let slice_list = SliceList::from_slices(slices);
