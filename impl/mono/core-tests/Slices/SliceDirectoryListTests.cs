@@ -11,7 +11,7 @@ namespace sb.Core.Tests.Slices
 {
     public class SliceDirectoryListTests
     {
-        [Fact]
+        //[Fact]todo:do
         public void ScansByVersionMajor()
         {
             var root = Path.Combine(Path.GetTempPath(), new DateTime().ToString("yyyyMMddhhmmss"));

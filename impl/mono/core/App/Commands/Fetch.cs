@@ -10,22 +10,22 @@ namespace sb.Core.App.Commands
 {
     public class Fetch : ICommand
     {
-        private readonly Args _args;
-
         public Fetch(Args args)
         {
-            _args = args;
+            Args = args;
         }
+
+        public Args Args { get; }
 
         void ICommand.Run()
         {
             var latestBranch = FetchLatestBranchName();
-            var tmpDir = Path.Combine(_args.EnvDir, Time.GetString());
+            var tmpDir = Path.Combine(Args.EnvDir, Time.GetString());
             Directory.CreateDirectory(tmpDir);
 
             var zipUrl = string.Format(Const.ZipUrlFmt, latestBranch);
             var tmpFile = Path.Combine(tmpDir, "slices.zip");
-            var url = _args.GetOption(Args.Options.Url, zipUrl);
+            var url = Args.GetOption(Args.Options.Url, zipUrl);
 
             using (var wc = new WebClient())
             {
@@ -40,27 +40,32 @@ namespace sb.Core.App.Commands
                 var extractedDirName = new DirectoryInfo(extractedDir).Name;
 
                 var directoryNew = Path.Combine(tmpDir, extractedDirName);
-                var directoryOld = Path.Combine(_args.SlicesDir, extractedDirName);
+                var directoryOld = Path.Combine(Args.SlicesDir, extractedDirName);
 
                 if (Directory.Exists(directoryOld))
                     Directory.Delete(directoryOld, true);
 
-                Directory.CreateDirectory(_args.SlicesDir);
+                Directory.CreateDirectory(Args.SlicesDir);
                 Directory.Move(directoryNew, directoryOld);
                 Directory.Delete(tmpDir, true);
             }
         }
 
+        /// <summary>
+        /// Fetches the latest version with the same MAJOR part as the executable
+        /// </summary>
+        /// <returns></returns>
         private string FetchLatestBranchName()
         {
-            var list = new List<SemVerName>();
+            var list = new List<SemVerInfo>();
             var branches = FetchBranches();
             foreach (var branch in branches.Where(b => b != "master"))
             {
-                var svn = SemVerNameParser.Parse(branch);
-                list.Add(svn);
+                var svi = new SemVerInfo(branch);
+                if (svi.NameMajor == Args.VersionInfo.FileMajorPart)
+                    list.Add(svi);
             }
-            list.Sort((x, y) => (y.NameVersion as IComparable).CompareTo(x.NameVersion));
+            list.Sort((x, y) => y.CompareTo(x));
             return list[0].ToString();
         }
 

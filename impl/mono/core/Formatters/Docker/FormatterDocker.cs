@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using sb.Core.Slices;
 
@@ -16,17 +17,17 @@ namespace sb.Core.Formatters.Docker
 
         public void Write(SliceSection section, StringBuilder sb)
         {
-            if (section.SectionType == SliceSection.Type.FROM)
+            if (section.SectionType != SliceSection.Type.RUN)
             {
-                foreach (var line in section.Lines)
+                foreach (var line in section.Lines.Where(item => !item.StartsWith("#")))
                 {
-                    sb.Append("FROM ").AppendLine(line);
+                    sb.Append(section.SectionType).Append(" ").AppendLine(line);
                 }
             }
 
             if (section.SectionType == SliceSection.Type.RUN)
             {
-                var text = string.Join($" && {"\\"} {Environment.NewLine}", section.Lines);
+                var text = string.Join($" && {"\\"} {Environment.NewLine}", section.Lines.Where(item => !item.StartsWith("#")));
                 sb.Append("RUN ");
                 sb.AppendLine(text);
             }

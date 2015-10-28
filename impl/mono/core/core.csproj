@@ -106,8 +106,6 @@
     <Compile Include="Slices\SliceSection.cs" />
     <Compile Include="Utils\Fs.cs" />
     <Compile Include="Utils\SemVerInfo.cs" />
-    <Compile Include="Utils\SemVerName.cs" />
-    <Compile Include="Utils\SemVerNameParser.cs" />
     <Compile Include="Utils\Text.cs" />
     <Compile Include="Utils\Time.cs" />
   </ItemGroup>

@@ -10,16 +10,15 @@ namespace sb.Core.Slices
 
         public SliceDirectoryList(string root, int versionMajor)
         {
-            
             var rootDir = new DirectoryInfo(root);
             
             foreach (var bunchDir in rootDir.EnumerateDirectories())
             {
                 // Only add slices from the directories with same major version
-                var svi = new SemVerInfo(bunchDir.Name);
-                if (svi.NameMajor == versionMajor)
+                var bunchInfo = new SemVerInfo(bunchDir.Name);
+                if (bunchInfo.NameMajor == versionMajor)
                 {
-                    _directories.Add(new SliceDirectory(rootDir, bunchDir, svi));
+                    _directories.Add(new SliceDirectory(rootDir, bunchDir, bunchInfo));
                 }
             }
         }

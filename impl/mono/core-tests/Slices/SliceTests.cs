@@ -12,12 +12,11 @@ namespace sb.Core.Tests.Slices
         {
             var sviB = new SemVerInfo("slices-1");
             var svi = new SemVerInfo(sviB.NameSemVer, "item-2");
-            var slice = new Slice("root", svi, new List<string> {"OS", "test"});
+            var slice = new Slice("root", svi, new List<string> {""});
             Assert.Equal(slice.RelPath, "root");
-            Assert.Equal(slice.SemVerInfo.BunchSemVer.Item1, 1);
-            Assert.Equal(slice.SemVerInfo.NameSemVer.Item1, 2);
-            Assert.Equal(slice.SemVerInfo.Name, "item");
-            Assert.Equal(slice.OsList[0], "test");
+            Assert.Equal(slice.Info.BunchSemVer.Item1, 1);
+            Assert.Equal(slice.Info.NameSemVer.Item1, 2);
+            Assert.Equal(slice.Info.Name, "item");
         }
     }
 }

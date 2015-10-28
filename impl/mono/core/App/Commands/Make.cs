@@ -25,7 +25,7 @@ namespace sb.Core.App.Commands
                 return;                
             }
 
-            Write(layers[0], path);
+            Write(path, layers.OsLayer, layers[0]);
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace sb.Core.App.Commands
         {
             var path = Args.GetOutPath();
             if (path.IsEmpty())
-                path = Path.Combine(outPath, layer.Slice.SemVerInfo.ToString());
+                path = Path.Combine(outPath, layer.Slice.Info.ToString());
 
             var dir = Path.GetDirectoryName(path);
             if (dir != null && !Directory.Exists(dir))
@@ -58,18 +58,20 @@ namespace sb.Core.App.Commands
         /// </summary>
         /// <param name="layer"></param>
         /// <param name="path"></param>
-        public virtual void Write(Layer layer, string path)
+        public virtual void Write(string path, Layer osLayer, Layer layer)
         {
             var formatter = new FormatterFactory().GetFormatter(Args);
-            Write(layer, path, formatter);
+            Write(path, osLayer, layer, formatter);
         }
 
-        public virtual void Write(Layer layer, string path, IFormatter formatter)
+        public virtual void Write(string path, Layer osLayer, Layer layer, IFormatter formatter)
         {
             var lines = new List<string>();
+
+            osLayer.Write(lines);
             layer.Write(lines);
 
-            var slice = new Slice("", layer.Slice.SemVerInfo, lines);
+            var slice = new Slice("", layer.Slice.Info, lines);
 
             var sb = new StringBuilder();
             formatter.Write(slice, sb);

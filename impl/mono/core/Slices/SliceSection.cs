@@ -8,7 +8,6 @@ namespace sb.Core.Slices
         public enum Type
         {
             None,
-            OS,
             DEP,
             ADD,
             CMD,

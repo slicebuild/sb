@@ -9,11 +9,11 @@ namespace sb.Core.Layers
     {
         private readonly List<Layer> _layers = new List<Layer>();
 
-        public LayerList(SliceList sliceList, SemVerInfo osInfo, IList<SemVerInfo> layerInfos)
+        public LayerList(SliceList sliceList, IList<SemVerInfo> layerInfos, SemVerInfo osInfo)
         {
             SliceList = sliceList;
-            OsInfo = osInfo;
             LayerInfos = layerInfos;
+            OsInfo = osInfo;
 
             // first put the requested layers into the list
             foreach (var layerInfo in layerInfos)
@@ -33,12 +33,16 @@ namespace sb.Core.Layers
             {
                 _layers[0].InsertDependency(0, FindLayer(layerInfos[i]));
             }
+
+            // last but not least find the os layer
+            OsLayer = FindLayer(osInfo);
         }
 
         public SliceList SliceList { get; }
-        public SemVerInfo OsInfo { get; }
         public IList<SemVerInfo> LayerInfos { get; }
+        public SemVerInfo OsInfo { get; }        
         public IList<SemVerInfo> MissingInfos { get; } = new List<SemVerInfo>();
+        public Layer OsLayer { get; }
 
         public Layer this[int index] => _layers[index];
 
@@ -52,7 +56,7 @@ namespace sb.Core.Layers
         {
             var layer =
                 _layers.Find(
-                    item => item.Slice.SemVerInfo.Name == layerInfo.Name && item.Slice.SemVerInfo.CompareByNameSemVer(layerInfo) >= 0);
+                    item => item.Slice.Info.Name == layerInfo.Name && item.Slice.Info.CompareByNameSemVer(layerInfo) >= 0);
 
             if (layer == null)
             {

@@ -1,53 +1,80 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using sb.Core.Utils;
 
 namespace sb.Core.Slices
 {
     public class SliceDirectory
     {
-        public SliceDirectory(DirectoryInfo rootDir, DirectoryInfo bunchDir, SemVerInfo bunchSvi)
+        public SliceDirectory(DirectoryInfo rootDir, DirectoryInfo bunchDir, SemVerInfo bunchInfo)
         {
             RootDir = rootDir;
             BunchDir = bunchDir;
-            BunchSvi = bunchSvi;
+            OsDir = bunchDir.GetDirectories("_", SearchOption.TopDirectoryOnly).First();
+            BunchInfo = bunchInfo;
         }
 
         public DirectoryInfo RootDir { get; }
         public DirectoryInfo BunchDir { get; }
-        public SemVerInfo BunchSvi { get; }
+        public DirectoryInfo OsDir { get; }
+        public SemVerInfo BunchInfo { get; }
 
         public IList<Slice> Scan(SemVerInfo osInfo)
         {
-            var list = new List<Slice>();
-            ScanFiles(BunchDir.FullName, list, osInfo);
-            foreach (var dir in Directory.EnumerateDirectories(BunchDir.FullName, "*.*", SearchOption.AllDirectories))
+            var list = FindOsSlices(osInfo);
+            if (list.Count != 0)
             {
-                ScanFiles(dir, list, osInfo);
-            }            
+                foreach (var dir in Directory.EnumerateDirectories(BunchDir.FullName, "*.*", SearchOption.AllDirectories))
+                {
+                    if (dir == OsDir.FullName || dir.StartsWith("."))
+                        continue;
+                    LoadSlices(new DirectoryInfo(dir), list);
+                }
+            }
             return list;
         }
 
-        private void ScanFiles(string dir, IList<Slice> list, SemVerInfo osInfo)
+        private IList<Slice> FindOsSlices(SemVerInfo osInfo)
         {
-            foreach (var path in Directory.EnumerateFiles(dir))
+            var list = new List<Slice>();
+            foreach (var fi in OsDir.GetFiles())
             {
-                var fileName = new FileInfo(path).Name;
-                if (fileName.StartsWith("."))
-                    continue;
+                var svi = new SemVerInfo(fi.Name);
+                if (svi.Name == osInfo.Name && svi.CompareByNameSemVer(osInfo) >= 0)
+                {
+                    var osSlice = LoadSlice(fi);
+                    if (osSlice != null)
+                        list.Add(osSlice);
+                }
+            }
+            return list;
+        }
 
-                var ext = Path.GetExtension(fileName);
-                if (ext == ".md" || ext == ".txt")
-                    continue;
-
-                var relPath = path.Replace(RootDir.FullName, "");
-                var svi = new SemVerInfo(BunchSvi.NameSemVer, fileName);
-                var lines = File.ReadAllLines(path);
-                var slice = new Slice(relPath, svi, lines);
-
-                if (slice.SupportsOs(osInfo))
+        private void LoadSlices(DirectoryInfo dir, IList<Slice> list)
+        {
+            foreach (var fi in dir.GetFiles())
+            {
+                var slice = LoadSlice(fi);
+                if (slice != null)
                     list.Add(slice);
             }
+        }
+
+        private Slice LoadSlice(FileInfo fi)
+        {
+            if (fi.Name.StartsWith("."))
+                return null;
+
+            var ext = Path.GetExtension(fi.Name);
+            if (ext == ".md" || ext == ".txt")
+                return null;
+
+            var relPath = fi.FullName.Replace(RootDir.FullName + Path.DirectorySeparatorChar, "");
+            var sliceInfo = new SemVerInfo(BunchInfo.NameSemVer, fi.Name);
+            var lines = File.ReadAllLines(fi.FullName);
+            var slice = new Slice(relPath, sliceInfo, lines);
+            return slice;
         }
     }
 }

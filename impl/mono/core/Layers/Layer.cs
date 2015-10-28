@@ -49,37 +49,11 @@ namespace sb.Core.Layers
                     Dependencies.Add(layer);
             }
 
-            foreach (var osInfo in Slice.OsInfos.Where(item => item.Equals(layerList.OsInfo)))
-            {
-                if (osInfo.Equals(Slice.SemVerInfo))
-                    continue;
-
-                var layer = layerList.FindLayer(osInfo);
-                if (!Dependencies.Contains(layer))
-                    Dependencies.Add(layer);
-            }
-
             foreach (var dep in Dependencies)
             {
                 dep.FindDependenciesRecursive(layerList);
             }
         }
-
-//        public virtual void Write(StringBuilder sb)
-//        {
-//            sb.AppendLine();
-//            foreach (var section in Slice.Sections.Where(s => s.SectionType != SliceSection.Type.OS && s.SectionType != SliceSection.Type.DEP))
-//            {
-//                sb.AppendLine();
-//                sb.AppendLine(section.SectionType.ToString());
-//                sb.AppendLine($"# {Slice.SemVerInfo}");
-//                foreach (var line in section.Lines)
-//                {
-//                    sb.AppendLine(line);
-//                }
-//            }
-//            sb.AppendLine();
-//        }
 
         public virtual void Write(IList<string> lines)
         {
@@ -91,11 +65,11 @@ namespace sb.Core.Layers
                 Dependencies[i].Write(lines);
             }
 
-            foreach (var section in Slice.Sections.Where(s => s.SectionType != SliceSection.Type.OS && s.SectionType != SliceSection.Type.DEP))
+            foreach (var section in Slice.Sections.Where(s => s.SectionType != SliceSection.Type.DEP))
             {
                 lines.Add("");
+                lines.Add($"# {Slice.Info}");
                 lines.Add(section.SectionType.ToString());
-                lines.Add($"# {Slice.SemVerInfo}");
                 foreach (var line in section.Lines)
                 {
                     lines.Add(line);

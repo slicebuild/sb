@@ -43,7 +43,7 @@ namespace sb.Core.Tests.Slices
             sliceList.Add(new Slice(null, new SemVerInfo(sviB.NameSemVer, "item3"), new List<string>()));
             sliceList.Sort();
 
-            Assert.Equal(sliceList[0].SemVerInfo.NameMajor, 2);
+            Assert.Equal(sliceList[0].Info.NameMajor, 2);
         }
 
         [Fact]
@@ -65,8 +65,8 @@ namespace sb.Core.Tests.Slices
 
             sliceList.Sort();
 
-            Assert.Equal(sliceList[0].SemVerInfo.BunchSemVer.Item1, 2);
-            Assert.Equal(sliceList[0].SemVerInfo.NameMajor, 2);
+            Assert.Equal(sliceList[0].Info.BunchSemVer.Item1, 2);
+            Assert.Equal(sliceList[0].Info.NameMajor, 2);
         }
 
         [Fact]

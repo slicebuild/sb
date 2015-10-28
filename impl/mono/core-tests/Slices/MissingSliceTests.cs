@@ -12,7 +12,7 @@ namespace sb.Core.Tests.Slices
             var svi = new SemVerInfo("item-2");
             var slice = new MissingSlice(svi);
             Assert.Equal(slice.RelPath, "item-2");
-            Assert.Equal(slice.SemVerInfo.NameMajor, 2);
+            Assert.Equal(slice.Info.NameMajor, 2);
         }
     }
 }

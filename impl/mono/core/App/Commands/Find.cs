@@ -44,8 +44,9 @@ namespace sb.Core.App.Commands
 
             var dirList = new SliceDirectoryList(Args.SlicesDir, Args.VersionInfo.FileMajorPart);
             var sliceList = dirList.Scan(osInfo);
+            sliceList.CheckDepInfos();
 
-            var layerList = new LayerList(sliceList, osInfo, layerInfos);
+            var layerList = new LayerList(sliceList, layerInfos, osInfo);
             return layerList;
         }
 

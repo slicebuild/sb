@@ -24,7 +24,7 @@ namespace sb.Core.App.Commands
                 return;
             }
 
-            Write(layers[0], path);
+            Write(path, layers.OsLayer, layers[0]);
 
             var stdout = new List<string>();
             Fs.RunProcess("docker", $"build -t sb-test {Path.GetDirectoryName(path)}", stdout);

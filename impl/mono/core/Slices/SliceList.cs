@@ -8,12 +8,10 @@ namespace sb.Core.Slices
     public class SliceList : IEnumerable<Slice>
     {
         private readonly List<Slice> _slices = new List<Slice>();
-
         public IList<SemVerInfo> MissingInfos { get; } = new List<SemVerInfo>();
 
-        public Slice this[int index] => _slices[index];
-
         public int Count => _slices.Count;
+        public Slice this[int index] => _slices[index];
 
         public void Add(Slice slice)
         {
@@ -35,31 +33,31 @@ namespace sb.Core.Slices
             var list = new List<Slice>();
             foreach (var info in infos)
             {
-                var slice = _slices.Find(item => item.SemVerInfo.Name.Contains(info.Name));
+                var slice = _slices.Find(item => item.Info.Name.Contains(info.Name));
                 if (slice != null)
                     list.Add(slice);
             }
             return list;
         }
 
-        public Slice FindSlice(SemVerInfo svi)
+        public Slice FindSlice(SemVerInfo info)
         {
-            var slice = _slices.Find(item => item.SemVerInfo.Name == svi.Name && item.SemVerInfo.CompareByNameSemVer(svi) >= 0);
+            var slice = _slices.Find(item => item.Info.Name == info.Name && item.Info.CompareByNameSemVer(info) >= 0);
             if (slice == null)
             {
-                if (!MissingInfos.Contains(svi))
-                    MissingInfos.Add(svi);
-                slice = new MissingSlice(svi);
+                if (!MissingInfos.Contains(info))
+                    MissingInfos.Add(info);
+                slice = new MissingSlice(info);
             }
             return slice;
         }
 
-        public IList<Slice> FindSlices(SemVerInfo[] svis)
+        public IList<Slice> FindSlices(IEnumerable<SemVerInfo> infos)
         {
             var slices = new List<Slice>();
-            foreach (var svi in svis)
+            foreach (var info in infos)
             {
-                var slice = FindSlice(svi);
+                var slice = FindSlice(info);
                 if (!slices.Contains(slice))
                 {
                     slices.Add(slice);
@@ -70,7 +68,7 @@ namespace sb.Core.Slices
 
         public void Sort()
         {
-            _slices.Sort((x, y) => y.SemVerInfo.CompareTo(x.SemVerInfo));
+            _slices.Sort((x, y) => y.Info.CompareTo(x.Info));
         }
 
         public IEnumerator<Slice> GetEnumerator()
