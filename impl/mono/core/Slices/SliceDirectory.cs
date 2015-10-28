@@ -22,11 +22,15 @@ namespace sb.Core.Slices
 
         public IList<Slice> Scan(SemVerInfo osInfo)
         {
+            // first find suitable os slices in the underscore dir
             var list = FindOsSlices(osInfo);
             if (list.Count != 0)
             {
+                // now loop over subdirectories (bunch root directory is excluded now)
                 foreach (var dir in Directory.EnumerateDirectories(BunchDir.FullName, "*.*", SearchOption.AllDirectories))
                 {
+                    // skip already processed underscore directory with os slices
+                    // and skip hidden directories
                     if (dir == OsDir.FullName || dir.StartsWith("."))
                         continue;
                     LoadSlices(new DirectoryInfo(dir), list);
@@ -40,8 +44,9 @@ namespace sb.Core.Slices
             var list = new List<Slice>();
             foreach (var fi in OsDir.GetFiles())
             {
-                var svi = new SemVerInfo(fi.Name);
-                if (svi.Name == osInfo.Name && svi.CompareByNameSemVer(osInfo) >= 0)
+                var info = new SemVerInfo(fi.Name);
+                // load os slices with the higher or equal version that was requested
+                if (info.Name == osInfo.Name && info.CompareByNameSemVer(osInfo) >= 0)
                 {
                     var osSlice = LoadSlice(fi);
                     if (osSlice != null)
