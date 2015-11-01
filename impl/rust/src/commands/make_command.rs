@@ -57,6 +57,7 @@ impl<'a> MakeCommand<'a> {
     fn get_output_file_path(&self) -> PathBuf {
         if self.options.outpath.is_empty() {
             let mut path = self.root_directory.to_path_buf();
+            path.push("make");
             path.push(&self.slices.first().unwrap().name);
             path
         } else {
