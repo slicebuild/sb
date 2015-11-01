@@ -3,14 +3,33 @@ extern crate rustc_serialize;
 extern crate semver;
 extern crate zip;
 
-#[macro_export]
+pub use commands::{Command, FetchCommand, FindCommand, MakeCommand};
+
 macro_rules! assert_not_empty {
     ($e:expr) => (assert!(!$e.is_empty(), "{} is empty", stringify!($e)));
 }
 
+use semver::Version;
+
 pub mod commands;
-pub mod helper;
 pub mod options_parse;
-pub mod slice;
+pub mod os;
+pub mod version;
+
+mod helper;
+mod slice;
 mod formatters;
-mod version;
+
+#[derive(Clone)]
+#[derive(Copy)]
+pub enum VersionMatchStrategy {
+    Exact,
+	ExactOrLesser,
+	ExactOrGreater,
+}
+
+pub struct RequestedSlice {
+    pub name: String,
+	pub version: Version,
+	pub version_match_strategy: VersionMatchStrategy,
+}

@@ -6,7 +6,7 @@ use curl::http;
 use rustc_serialize::json::Json;
 use zip::read::ZipArchive;
 use version;
-use super::command::Command;
+use commands::command::Command;
 
 pub struct FetchCommand<'a> {
     slice_root_directory: &'a Path,
@@ -27,12 +27,6 @@ fn choose_latest_version<'a>(versions: &'a Vec<&str>) -> &'a str {
 }
 
 impl<'a> FetchCommand<'a> {
-    /// # Examples
-    /// ```
-    /// use sb::commands::fetch_command::FetchCommand;
-    /// use std::path::Path;
-    /// let command = FetchCommand::new(Path::new("/tmp"));
-    /// ```
     pub fn new(slice_root_directory: &'a Path) -> FetchCommand {
         FetchCommand { slice_root_directory: slice_root_directory }
     }

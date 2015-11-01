@@ -1,12 +1,11 @@
 extern crate sb;
-use sb::options_parse::{Options, parse_options};
-use sb::commands::command::Command;
-use sb::commands::fetch_command::FetchCommand;
-use sb::commands::find_command::FindCommand;
-use sb::commands::make_command::MakeCommand;
-use std::ops::Deref;
 use std::env::current_dir;
 use std::path::PathBuf;
+use sb::{RequestedSlice, VersionMatchStrategy};
+use sb::options_parse::{Options, parse_options};
+use sb::commands::{Command, FetchCommand, FindCommand, MakeCommand};
+use sb::os::Os;
+use sb::version;
 
 const DEFAULT_OS: &'static str = "debian";
 const DEFAULT_LAYER: &'static str = "jekyll";
@@ -34,14 +33,19 @@ fn pop_first_argument_or_take_default(arguments: &mut Vec<String>, default_value
     }
 }
 
-fn get_os_from_arguments_or_default(arguments: &mut Vec<String>) -> String {
-    pop_first_argument_or_take_default(arguments, DEFAULT_OS.to_string())
+fn get_os_from_arguments_or_default(arguments: &mut Vec<String>) -> Os {
+    let os = pop_first_argument_or_take_default(arguments, DEFAULT_OS.to_string());
+    let (name, version) = version::extract_name_and_version(&os);
+    Os { name: name, version: version }
 }
 
-fn get_layers_from_arguments_or_default(arguments: &mut Vec<String>) -> Vec<String> {
+fn get_layers_from_arguments_or_default(arguments: &mut Vec<String>) -> Vec<RequestedSlice> {
     let argument = pop_first_argument_or_take_default(arguments, DEFAULT_LAYER.to_string());
     argument.split(',')
-            .map(|layer| layer.to_string())
+            .map(|slice| {
+                let (name, version) = version::extract_name_and_version(slice);
+                RequestedSlice { name: name, version: version, version_match_strategy: VersionMatchStrategy::ExactOrGreater }
+            })
             .collect()
 }
 
@@ -54,21 +58,19 @@ fn run_fetch_command(app_path: String) {
 
 fn run_find_command(app_path: String, mut arguments: Vec<String>) {
     let layers = get_layers_from_arguments_or_default(&mut arguments);
-    let layers: Vec<&str> = layers.iter().map(|layer| layer.deref()).collect();
     let os = get_os_from_arguments_or_default(&mut arguments);
     let root_directory = get_root_directory(&app_path);
     let slice_root_directory = get_slice_root_directory(&root_directory);
-    let mut command = FindCommand::new(&layers, &os, &slice_root_directory);
+    let mut command = FindCommand::new(layers, os, &slice_root_directory);
     command.run();
 }
 
 fn run_make_command(app_path: String, mut arguments: Vec<String>, options: Options) {
     let layers = get_layers_from_arguments_or_default(&mut arguments);
-    let layers: Vec<&str> = layers.iter().map(|layer| layer.deref()).collect();
     let os = get_os_from_arguments_or_default(&mut arguments);
     let root_directory = get_root_directory(&app_path);
     let slice_root_directory = get_slice_root_directory(&root_directory);
-    let mut command = MakeCommand::new(&layers, &os, &root_directory,
+    let mut command = MakeCommand::new(layers, os, &root_directory,
                                        &slice_root_directory, options);
     command.run();
 }

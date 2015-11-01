@@ -16,7 +16,7 @@ use version;
 /// current_dir.push("test_slices");
 /// match directory::get_latest_slice_directories(&current_dir) {
 ///     Ok(directories) => {
-///         assert_eq!(directories, vec!["slices-1.0.0-alpha", "slices-1.0.1"]);
+///         assert_eq!(directories, vec!["slices-du-0.0.2", "slices-1.0.1"]);
 ///     }
 ///     Err(error) => panic!("{}", error)
 /// }
