@@ -1,5 +1,6 @@
 use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -130,7 +131,14 @@ impl<'a> MakeCommand<'a> {
     }
 
     fn write_code(&self, code: String) {
-        match File::create(self.get_output_file_path()) {
+    	let path = self.get_output_file_path();
+    	if let Err(error) = fs::create_dir_all(path.parent().unwrap()) {
+    	    panic!("Directory for make file cannot be created.
+Path = {}
+Reason = {}",
+    	           path.parent().unwrap().display(), error);
+    	}
+        match File::create(path) {
             Ok(mut file) => {
                 if let Err(error) = file.write_fmt(format_args!("{}", code)) {
                     panic!("{}", error);
