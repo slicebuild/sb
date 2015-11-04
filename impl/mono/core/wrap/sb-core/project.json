@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "net451": {
+      "wrappedProject": "../../core.csproj",
+      "bin": {
+        "assembly": "../../obj/{configuration}/sb-core.dll",
+        "pdb": "../../obj/{configuration}/sb-core.pdb"
+      }
+    }
+  }
+}

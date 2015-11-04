@@ -18,7 +18,7 @@ namespace sb.Core.App.Messages
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "C:\Users\AlexR\Documents\GitHubVisualStudio\sb\impl\mono\core\App\Messages\HelpMsg.tt"
+    #line 1 "R:\sb\impl\mono\core\App\Messages\HelpMsg.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "14.0.0.0")]
     public partial class HelpMsg : HelpMsgBase
     {
@@ -28,8 +28,12 @@ namespace sb.Core.App.Messages
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write("\r\nUsage: wb COMMAND\r\n\r\nsuper-duper tool\r\n\r\nCommands:\r\n\tcreate\t\t\tCreates a file\r\n\t" +
-                    "update\t\t\tUpdates files");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n\nUsage: wb COMMAND\n\nsuper-duper tool\n\nCommands:\n\tcreate\t\t\tCreates a file\n\tupdate" +
+                    "\t\t\tUpdates files");
             return this.GenerationEnvironment.ToString();
         }
     }

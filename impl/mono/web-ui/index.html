@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>TypeScript HTML App</title>
+</head>
+<body ng-app="app">
+    <h1>TypeScript HTML App</h1>
+
+<div id="content">
+    <form name="makeForm" novalidate ng-submit="page.makeScript(this.makeForm)">
+        <div>
+            <input ng-model="page.sliceName" placeholder="slice name"/>
+        </div>
+        <div>
+            <input ng-model="page.sliceOs" placeholder="slice OS"/>
+        </div>
+        <div>
+            <button>Make</button>
+        </div>
+    </form>
+</div>
+<script src="js/angular.min.js"></script>
+<script src="build/build.js"></script>
+<script>
+    start(angular, {
+        apiUrl: 'aa'
+    });
+</script>
+</body>
+</html>
