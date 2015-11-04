@@ -8,6 +8,28 @@ pub fn parse(str: &str) -> Version {
     }
 }
 
+pub fn extract_name_and_version(string: &str) -> (String, Version) {
+    assert_not_empty!(string);
+    let iter = string.chars().enumerate();
+    let positions = iter.filter(|&(_, c)| c == '-')
+                        .map(|(i, _)| i)
+                        .filter(|i| {
+        if let Some(char) = string.chars().nth(i + 1) {
+            char.is_digit(10)
+        } else {
+            false
+        }
+                        })
+                        .collect::<Vec<_>>();
+    match positions.len() {
+        0 => (string.to_string(), zero()),
+        _ => {
+            let pos = *positions.last().unwrap();
+            (string[..pos].to_string(), parse(&string[pos + 1..]))
+        }
+    }
+}
+
 pub fn zero() -> Version {
     Version { major: 0, minor: 0, patch: 0, pre: Vec::new(), build: Vec::new() }
 }
@@ -31,6 +53,28 @@ fn parse_invalid_version(str: &str) -> Version {
 #[cfg(test)]
 mod tests {
     use semver::{Identifier, Version};
+
+    #[test]
+    fn slice_with_only_major() {
+        let (name, version) = super::extract_name_and_version("apache-2");
+        assert_eq!(name, "apache");
+        assert_eq!(version, super::parse("2"));
+    }
+
+    #[test]
+    fn slice_with_dash_in_name() {
+        let (name, version) = super::extract_name_and_version("my-apache-2");
+        assert_eq!(name, "my-apache");
+        assert_eq!(version, super::parse("2"));
+    }
+
+    #[test]
+    fn get_slice_name_and_version_from_string() {
+        let string = "my_app-2.0.0-beta".to_string();
+        let (slice_name, version) = super::extract_name_and_version(&string);
+        assert_eq!(slice_name, "my_app");
+        assert_eq!(version, super::parse("2.0.0-beta"));
+    }
 
     #[test]
     fn only_major() {

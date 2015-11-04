@@ -1,9 +1,9 @@
-use slice::item::Slice;
+use slice::Slice;
 
-pub fn code_for_slice(slice: &Slice) -> String {
+pub fn generate_code(slice: &Slice) -> String {
     let mut string = String::new();
-    for item in slice.run_section() {
-        string.push_str(item);
+    for preparation in slice.preparations() {
+        string.push_str(preparation);
         string.push('\n');
     }
     string
@@ -11,27 +11,27 @@ pub fn code_for_slice(slice: &Slice) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
+    use slice::Slice;
     use version;
-    use slice::item::Slice;
-    use slice::section::{Kind, Section};
 
-    fn create_slice(run_section_items: Vec<&str>) -> Slice {
-        let items = run_section_items.into_iter().map(|i| i.to_string()).collect::<Vec<_>>();
-        let run_section = Section { kind: Kind::Run, items: items };
-        Slice { name: "Hello".to_string(), path: PathBuf::new(),
-                version: version::zero(), sections: vec![run_section] }
+    fn create_slice(ancestors: Vec<&str>, preparations: Vec<&str>) -> Slice {
+        let ancestors = ancestors.into_iter().map(str::to_string).collect();
+        let preparations = preparations.into_iter().map(str::to_string).collect();
+        let name = String::from("slice");
+        Slice::new(name, version::zero(), ancestors, preparations, Vec::new(), Vec::new())
     }
 
     #[test]
-    fn code_for_slice() {
-        let slice = create_slice(vec!["apt-get install -q -y wget"]);
-        assert_eq!(super::code_for_slice(&slice), "apt-get install -q -y wget\n");
+    fn generate_code_for_slice_with_one_ancestor_and_one_preparation() {
+        let slice = create_slice(vec!["base"], vec!["apt-get install -q -y wget"]);
+        assert_eq!(super::generate_code(&slice), "apt-get install -q -y wget\n");
+    }
 
-        let run_section_items = vec!["apt-get install -q -y wget",
-                                     "apt-get install -q -y wget_gui"];
-        let slice = create_slice(run_section_items);
-        assert_eq!(super::code_for_slice(&slice), "apt-get install -q -y wget
+    #[test]
+    fn generate_code_for_slice_with_one_ancestor_and_two_preparations() {
+        let slice = create_slice(vec!["base"], vec!["apt-get install -q -y wget",
+                                                    "apt-get install -q -y wget_gui"]);
+        assert_eq!(super::generate_code(&slice), "apt-get install -q -y wget
 apt-get install -q -y wget_gui
 ");
     }

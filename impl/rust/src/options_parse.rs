@@ -22,7 +22,7 @@ impl FromStr for Format {
 
 #[derive(Debug)]
 pub struct Options {
-    format: Format,
+    pub format: Format,
     pub outpath: String,
     pub url: String,
 }
@@ -30,10 +30,6 @@ pub struct Options {
 impl Options {
     pub fn new() -> Options {
         Options { format: Format::Shell, outpath: String::new(), url: String::new() }
-    }
-
-    pub fn format(&self) -> Format {
-        self.format
     }
 
     fn get_format_option_name() -> &'static str {

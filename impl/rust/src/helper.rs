@@ -1,23 +1,8 @@
 use std::io::ErrorKind;
 use std::fs::metadata;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-/// # Examples
-/// ```should_panic
-/// use sb::helper::check_slice_root_exists;
-/// use std::path::Path;
-/// let path = Path::new("/path/that/does/not/exist");
-/// check_slice_root_exists(path);
-/// ```
-
-/// ```
-/// use sb::helper::check_slice_root_exists;
-/// use std::env::current_dir;
-/// use std::path::Path;
-/// let path = current_dir().unwrap();
-/// check_slice_root_exists(&path);
-/// ```
-pub fn check_slice_root_exists(slice_root_directory: &Path) {
+pub fn assert_slice_root_exists(slice_root_directory: &Path) {
     if let Err(error) = metadata(slice_root_directory) {
         if error.kind() == ErrorKind::NotFound {
             println!("Slice root directory is not exists. Path = {}",
@@ -29,32 +14,21 @@ pub fn check_slice_root_exists(slice_root_directory: &Path) {
     }
 }
 
-/// # Examples
-/// ```
-/// use sb::helper::relative_path_from;
-/// use std::path::Path;
-/// let path = Path::new("/base/path");
-/// let base = Path::new("/base");
-/// let relative_path = relative_path_from(path, base);
-/// assert_eq!(relative_path, Some(Path::new("path").to_path_buf()));
-/// ```
+#[cfg(test)]
+mod tests {
+    use std::env::current_dir;
+    use std::path::Path;
 
-/// ```
-/// use std::path::Path;
-/// use sb::helper::relative_path_from;
-/// let path = Path::new("/base/path");
-/// let wrong_base = Path::new("/wrong_base");
-/// let relative_path = relative_path_from(path, wrong_base);
-/// assert_eq!(relative_path, None);
-/// ```
-pub fn relative_path_from(path: &Path, base: &Path) -> Option<PathBuf> {
-    let path = path.to_str().unwrap();
-    let base = base.to_str().unwrap();
-    if !path.starts_with(base) {
-        return None
+    #[test]
+    fn test_assert_slice_root_exists_for_existent_directory() {
+        let path = current_dir().unwrap();
+        super::assert_slice_root_exists(&path);
     }
-    let path = &path[base.len()..];
-    let path = path.trim_matches(|c| c == '/' || c == '\\');
-    let path = Path::new(path).to_path_buf();
-    Some(path)
+
+    #[should_panic]
+    #[test]
+    fn test_assert_slice_root_exists_for_nonexistent_directory() {
+        let path = Path::new("/path/that/does/not/exist");
+        super::assert_slice_root_exists(path);
+    }
 }

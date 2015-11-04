@@ -1,6 +1,6 @@
-extern crate semver;
+pub use self::slice::Slice;
+pub use self::list::List;
 
-pub mod directory;
-pub mod section;
-pub mod item;
-pub mod list;
+mod list;
+mod section;
+mod slice;

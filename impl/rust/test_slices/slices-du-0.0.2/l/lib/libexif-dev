@@ -1,0 +1,6 @@
+DEP
+update
+
+RUN
+apt-get install -q -y libexif-dev
+

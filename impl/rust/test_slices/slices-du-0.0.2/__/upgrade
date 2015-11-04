@@ -1,0 +1,5 @@
+DEP
+update
+
+RUN
+apt-get upgrade -y
